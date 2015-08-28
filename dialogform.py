@@ -1,18 +1,18 @@
 ##############################################################################
-# Copyright (c) 2007-2008, Hajime Nakagami<nakagami@da2.so-net.ne.jp>
+# Copyright (c) 2007-2008,2015, Hajime Nakagami<nakagami@gmail.com>
 # All rights reserved.
-# 
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
 # are met:
-# 
+#
 #   1. Redistributions of source code must retain the above copyright notice,
 #      this list of conditions and the following disclaimer.
-# 
+#
 #   2. Redistributions in binary form must reproduce the above copyright
 #      notice, this list of conditions and the following disclaimer in the
 #      documentation and/or other materials provided with the distribution.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 # "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 # LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
@@ -26,20 +26,21 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 ##############################################################################
-import clr, sys
+import clr
 clr.AddReference("System.Windows.Forms")
 clr.AddReference("System.Drawing")
 from System.Windows import Forms
 from System.Drawing import Size
 
+
 def charset_list():
     return [
-        "NONE", "ASCII", "UNICODE_FSS", "UTF8", "OCTETS", 
+        "NONE", "ASCII", "UNICODE_FSS", "UTF8", "OCTETS",
         #from fbintl.conf <charset ????>
         "SJIS_0208", "EUCJ_0208", "DOS437", "DOS850", "DOS865",
         "ISO8859_1", "ISO8859_2", "ISO8859_3", "ISO8859_4", "ISO8859_5",
         "ISO8859_6", "ISO8859_7", "ISO8859_8", "ISO8859_9", "ISO8859_13",
-        "DOS852", "DOS857", "DOS860", "DOS861", "DOS863", "CYRL", "DOS737", 
+        "DOS852", "DOS857", "DOS860", "DOS861", "DOS863", "CYRL", "DOS737",
         "DOS775", "DOS858", "DOS862", "DOS864", "DOS866", "DOS869",
         "WIN1250", "WIN1251", "WIN1252", "WIN1253", "WIN1254", "NEXT",
         "WIN1255", "WIN1256", "WIN1257", "KSC_5601", "BIG_5", "GB_2312",
@@ -60,7 +61,7 @@ class SimpleTextForm(Forms.Form):
         self._tx.ScrollBars = Forms.ScrollBars.Vertical
         self._tx.Text = '\r\n'.join(s.strip().split('\n'))
         self.Controls.Add(self._tx)
-        
+
 
 class SimpleInputForm(Forms.Form):
     def __init__(self, title, text):
@@ -90,7 +91,7 @@ class SimpleInputForm(Forms.Form):
 
 
 class SimpleSqlForm(Forms.Form):
-    def __init__(self, conn, sql, read_only = False):
+    def __init__(self, conn, sql, read_only=False):
         self.conn = conn
         self.Width = 600
         self.Height = 100
@@ -147,7 +148,7 @@ class UserPasswordForm(Forms.Form):
             self._savePassword.Checked = True
         self._savePassword.TabIndex = 3
         self.Controls.Add(self._savePassword)
-        
+
         self.AcceptButton = Forms.Button(Text="&OK", Left=60, Top=90)
         self.AcceptButton.Click += self.OnOk
         self.AcceptButton.TabIndex = 4
@@ -228,8 +229,8 @@ class UserAddForm(Forms.Form):
         self.Controls.Add(self._password)
 
         self.Controls.Add(
-            Forms.Label(Left=12, Top=72, Text="Pass(confirm)", 
-            AutoSize=True))
+            Forms.Label(Left=12, Top=72, Text="Pass(confirm)", AutoSize=True)
+        )
         self._password2 = Forms.TextBox(Left=100, Top=69, Width=230)
         self._password2.PasswordChar = '*'
         self._password2.TabIndex = 3
@@ -299,8 +300,8 @@ class UserModForm(Forms.Form):
         self.Controls.Add(self._password)
 
         self.Controls.Add(
-            Forms.Label(Left=12, Top=72, Text="Pass(confirm)", 
-            AutoSize=True))
+            Forms.Label(Left=12, Top=72, Text="Pass(confirm)", AutoSize=True)
+        )
         self._password2 = Forms.TextBox(Left=100, Top=69, Width=230)
         self._password2.PasswordChar = '*'
         self._password2.TabIndex = 3
@@ -366,7 +367,7 @@ class ServerPropForm(Forms.Form):
         self._server = Forms.TextBox(Left=92, Top=58, Width=250)
         self._server.TabIndex = 2
         self.Controls.Add(self._server)
-        
+
         self.AcceptButton = Forms.Button(Text="&Register", Left=70, Top=90)
         self.AcceptButton.Click += self.OnRegister
         self.AcceptButton.TabIndex = 3
@@ -399,14 +400,14 @@ class ConnPropForm(Forms.Form):
         self.require_server = require_server
 
         if self.require_server:
-            self.Controls.Add(Forms.Label(Left=3, Top=13, 
-                            Text="Server name:", AutoSize=True))
+            self.Controls.Add(Forms.Label(
+                Left=3, Top=13, Text="Server name:", AutoSize=True))
             self._serverName = Forms.TextBox(Left=90, Top=10, Width=340)
             self._serverName.TabIndex = 1
             self.Controls.Add(self._serverName)
         else:
-            self.Controls.Add(Forms.Label(Left=3, Top=13, 
-                            Text="Display name:", AutoSize=True))
+            self.Controls.Add(Forms.Label(
+                Left=3, Top=13, Text="Display name:", AutoSize=True))
             self._displayName = Forms.TextBox(Left=90, Top=10, Width=340)
             self._displayName.TabIndex = 1
             self.Controls.Add(self._displayName)
@@ -416,8 +417,7 @@ class ConnPropForm(Forms.Form):
         self._databasePath = Forms.TextBox(Left=90, Top=41, Width=310)
         self._databasePath.TabIndex = 2
         self.Controls.Add(self._databasePath)
-        self._pathButton = Forms.Button(
-                            Text="...", Left=406, Top=39, Size=Size(24,24))
+        self._pathButton = Forms.Button(Text="...", Left=406, Top=39, Size=Size(24, 24))
         self._pathButton.Click += self.OnDbFileOpen
         self._pathButton.TabIndex = 3
         self.Controls.Add(self._pathButton)
@@ -464,14 +464,12 @@ class ConnPropForm(Forms.Form):
         self._port.TabIndex = 9
         self.Controls.Add(self._port)
 
-        self.AcceptButton = Forms.Button(
-                        Text="&OK", Left=267, Top=155, Size=Size(75,23))
+        self.AcceptButton = Forms.Button(Text="&OK", Left=267, Top=155, Size=Size(75, 23))
         self.AcceptButton.Click += self.OnOk
         self.AcceptButton.TabIndex = 10
         self.Controls.Add(self.AcceptButton)
 
-        self.CancelButton = Forms.Button(
-                        Text="&Cancel", Left=348, Top=155, Size=Size(75, 23))
+        self.CancelButton = Forms.Button(Text="&Cancel", Left=348, Top=155, Size=Size(75, 23))
         self.CancelButton.TabIndex = 11
         self.Controls.Add(self.CancelButton)
 
@@ -541,14 +539,12 @@ class SelectItemsForm(Forms.Form):
         self._list.SelectionMode = Forms.SelectionMode.MultiExtended
         self.Controls.Add(self._list)
 
-        self.AcceptButton = Forms.Button(
-                        Text="&OK", Left=50, Top=155, Size=Size(75,23))
+        self.AcceptButton = Forms.Button(Text="&OK", Left=50, Top=155, Size=Size(75, 23))
         self.AcceptButton.Click += self.OnOk
         self.AcceptButton.TabIndex = 2
         self.Controls.Add(self.AcceptButton)
 
-        self.CancelButton = Forms.Button(
-                        Text="&Cancel", Left=130, Top=155, Size=Size(75, 23))
+        self.CancelButton = Forms.Button(Text="&Cancel", Left=130, Top=155, Size=Size(75, 23))
         self.CancelButton.TabIndex = 3
         self.Controls.Add(self.CancelButton)
 
@@ -582,14 +578,12 @@ class TableColumnForm(Forms.Form):
         self._ltColumn.TabIndex = 2
         self.Controls.Add(self._ltColumn)
 
-        self.AcceptButton = Forms.Button(
-                        Text="&OK", Left=255, Top=176, Size=Size(75,23))
+        self.AcceptButton = Forms.Button(Text="&OK", Left=255, Top=176, Size=Size(75, 23))
         self.AcceptButton.Click += self.OnOk
         self.AcceptButton.TabIndex = 3
         self.Controls.Add(self.AcceptButton)
 
-        self.CancelButton = Forms.Button(
-                        Text="&Cancel", Left=335, Top=176, Size=Size(75, 23))
+        self.CancelButton = Forms.Button(Text="&Cancel", Left=335, Top=176, Size=Size(75, 23))
         self.CancelButton.TabIndex = 4
         self.Controls.Add(self.CancelButton)
 
@@ -642,7 +636,7 @@ class SqlServerForm(Forms.Form):
             Left=30, Top=95, Text="Save Password", AutoSize=True)
         self._savePassword.TabIndex = 4
         self.Controls.Add(self._savePassword)
-        
+
         self.AcceptButton = Forms.Button(Text="&OK", Left=60, Top=121)
         self.AcceptButton.Click += self.OnOk
         self.AcceptButton.TabIndex = 5
