@@ -44,9 +44,25 @@ for f in folders:
 
 # Add reference to Firebird data provider
 clr.AddReferenceToFile('FirebirdSql.Data.FirebirdClient.dll')
-from FirebirdSql.Data.FirebirdClient import *
-from FirebirdSql.Data.Services import *
-from FirebirdSql.Data.Isql import *
+from FirebirdSql.Data.FirebirdClient import (
+    FbConnection,
+    FbCommand,
+    FbParameter,
+    FbScript,
+    FbBatchExecution,
+    FbDataAdapter,
+    FbSecurity
+)
+from FirebirdSql.Data.Services import (
+    FbBackup,
+    FbRestore,
+    FbRestoreFlags,
+    FbBackupFile,
+    FbBackupFlags,
+    ServiceOutputEventHandler,
+    FbUserData,
+    FbLog,
+)
 
 def create_generator_and_trigger_sql(tab_name, id_name, seed, inc):
     return '''create generator "%(tab_name)s_ID";
