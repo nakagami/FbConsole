@@ -795,13 +795,13 @@ class FbDatabase(object):
 
 
     def set_not_null(self, table_name, column_name, not_null, check_flag=True):
-        if check_flag and not_null == True:
+        if check_flag and not_null is True:
             sqlStmt = '''select count(*) c from %s 
                         where %s is null''' % (table_name, column_name)
             n = FbCommand(sqlStmt, self.conn).ExecuteScalar()
             if n != 0:
                 return "%s have %d NULL record(s)." % (column_name, n)
-        if check_flag and not_null == False:
+        if check_flag and not_null is False:
             sqlStmt = '''select A.rdb$index_name INDEX_NAME
                 from rdb$indices A, rdb$index_segments B
                 where A.rdb$index_name=B.rdb$index_name
@@ -855,7 +855,7 @@ class FbDatabase(object):
                 ''' % (description, name.upper())
         elif category=='procedure':
             sqlStmt = '''update rdb$procedures set rdb$description='%s'
-                where rdb$procedure_name='%s' 
+                where rdb$procedure_name='%s'
                 ''' % (description, name.upper())
         elif category=='procedure_param':
             sqlStmt = '''update rdb$procedure_parameters 
@@ -886,20 +886,20 @@ if __name__ == '__main__':
     print 'testdir=' + testdir
 
     conn_d = {
-        'User' : 'SYSDBA',
-        'Password' : 'masterkey',
-        'DataSource' : 'localhost',
-        'Database' : testdir + r'test.fdb',
-        'Charset' : 'UNICODE_FSS', 
+        'User': 'SYSDBA',
+        'Password': 'masterkey',
+        'DataSource': 'localhost',
+        'Database': testdir + r'test.fdb',
+        'Charset': 'UNICODE_FSS',
     }
 
     try:
         user_del(conn_d, 'Alice')
         user_del(conn_d, 'Bob')
         user_del(conn_d, 'Charlie')
-        user_add(conn_d,'Alice','secret','Alice','Tester','A')
-        user_add(conn_d,'Bob','secret','Bob','Tester','B')
-        user_add(conn_d,'Charlie','secret','Charlie','Tester')
+        user_add(conn_d, 'Alice', 'secret', 'Alice', 'Tester', 'A')
+        user_add(conn_d, 'Bob', 'secret', 'Bob', 'Tester', 'B')
+        user_add(conn_d, 'Charlie', 'secret', 'Charlie', 'Tester')
     except:
         print "Can't del & add user Alice, Bob and Chalie"
 
