@@ -1079,18 +1079,21 @@ if __name__ == '__main__':
     except Exception, e:
         print "Can't load UDF functions."
 
-    db.write_description('domain', "Domain A's description", 'dom_a')
-    db.write_description('role', "Role A's description", 'role_a')
-    db.write_description('table', "Table FOO's description", 'foo')
-    db.write_description('table', "VIEW FOO_VIEW's description", 'foo_view')
-    db.write_description('column', "Table FOO's A description", 'foo', 'a')
-    db.write_description('column', "View FOO_VIEW's A ", 'foo_view', 'a')
-    db.write_description('exception', "Test Exception", 'exception_a')
-    db.write_description('procedure', "Test Procedure", 'foo_proc')
-    db.write_description('procedure_param', "In param", 'foo_proc', 'param_b')
-    db.write_description('procedure_param', "Out param 1", 'foo_proc', 'sum_a')
-    db.write_description('procedure_param', "Out param 2", 'foo_proc', 'avg_a')
-    db.write_description('trigger', "Trigger's description", 'set_foo_primary')
+    try:
+        db.write_description('domain', "Domain A's description", 'dom_a')
+        db.write_description('role', "Role A's description", 'role_a')
+        db.write_description('table', "Table FOO's description", 'foo')
+        db.write_description('table', "VIEW FOO_VIEW's description", 'foo_view')
+        db.write_description('column', "Table FOO's A description", 'foo', 'a')
+        db.write_description('column', "View FOO_VIEW's A ", 'foo_view', 'a')
+        db.write_description('exception', "Test Exception", 'exception_a')
+        db.write_description('procedure', "Test Procedure", 'foo_proc')
+        db.write_description('procedure_param', "In param", 'foo_proc', 'param_b')
+        db.write_description('procedure_param', "Out param 1", 'foo_proc', 'sum_a')
+        db.write_description('procedure_param', "Out param 2", 'foo_proc', 'avg_a')
+        db.write_description('trigger', "Trigger's description", 'set_foo_primary')
+    except Exception, e:
+        print "Can't write to system table, can't set description."
 
     db.close()
 
@@ -1217,18 +1220,21 @@ if __name__ == '__main__':
     for f in db.function_names():
         print f['FUNCTION_NAME']
 
-    print "\n[set not null flag]"
-    print db.set_not_null('foo', 'c', False)
-    print db.set_not_null('foo', 'd', True)
-    db.execute_noq('''insert into foo (a,b,d) values (1, 'ABC', 1.1)''')
-    db.execute_noq('''insert into foo (a,b,d) values (1, 'DEF', 2.1)''')
-    for c in db.execute('''select * from foo'''):
-        for i in range(c.FieldCount):
-            print c[i]
-    print db.set_not_null('foo', 'c', True)
-    db.execute_noq('''update foo set c = 'Not NULL value' ''')
-    print db.set_not_null('foo', 'c', True)
-    print db.set_not_null('foo', 'a', False)
+    try:
+        print "\n[set not null flag]"
+        print db.set_not_null('foo', 'c', False)
+        print db.set_not_null('foo', 'd', True)
+        db.execute_noq('''insert into foo (a,b,d) values (1, 'ABC', 1.1)''')
+        db.execute_noq('''insert into foo (a,b,d) values (1, 'DEF', 2.1)''')
+        for c in db.execute('''select * from foo'''):
+            for i in range(c.FieldCount):
+                print c[i]
+        print db.set_not_null('foo', 'c', True)
+        db.execute_noq('''update foo set c = 'Not NULL value' ''')
+        print db.set_not_null('foo', 'c', True)
+        print db.set_not_null('foo', 'a', False)
+    except Exception, e:
+        print "Can't write to system table, can't set not null flag."
 
     print "\n[reorder column]"
     db.reorder_fields('foo', ['g', 'f', 'e', 'd', 'c', 'b', 'a'])
