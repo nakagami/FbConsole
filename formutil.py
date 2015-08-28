@@ -1,18 +1,18 @@
 ##############################################################################
-# Copyright (c) 2007, Hajime Nakagami<nakagami@da2.so-net.ne.jp>
+# Copyright (c) 2007,2015 Hajime Nakagami<nakagami@gmail.com>
 # All rights reserved.
-# 
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
 # are met:
-# 
+#
 #   1. Redistributions of source code must retain the above copyright notice,
 #      this list of conditions and the following disclaimer.
-# 
+#
 #   2. Redistributions in binary form must reproduce the above copyright
 #      notice, this list of conditions and the following disclaimer in the
 #      documentation and/or other materials provided with the distribution.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 # "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 # LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
@@ -26,17 +26,16 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 ##############################################################################
-import clr, sys
+import clr
 clr.AddReference("System.Windows.Forms")
 clr.AddReference("System.Drawing")
 from System.Windows import Forms
-from System.Drawing import Point, Size, Image
-from System.IO import *
-from System.IO.IsolatedStorage import IsolatedStorageFileStream
+from System.IO import FileMode, BinaryWriter, BinaryReader, IsolatedStorage
 import marshal
 
+
 def userpref_save(v, filename):
-    stream = IsolatedStorageFileStream(filename, FileMode.Create)
+    stream = IsolatedStorage(filename, FileMode.Create)
     sw = BinaryWriter(stream)
     sw.Write(marshal.dumps(v))
     sw.Close()
@@ -44,7 +43,7 @@ def userpref_save(v, filename):
 
 
 def userpref_load(filename):
-    stream = IsolatedStorageFileStream(filename, FileMode.Open)
+    stream = IsolatedStorage(filename, FileMode.Open)
     sr = BinaryReader(stream)
     v = marshal.loads(sr.ReadString())
     sr.Close()
@@ -99,7 +98,7 @@ def ClearGrid(grid, caps=[]):
     grid.Columns.Clear()
     grid.AllowUserToAddRows = False
     grid.EditMode = Forms.DataGridViewEditMode.EditProgrammatically
-    grid.ColumnCount=len(caps)
+    grid.ColumnCount = len(caps)
     for i in range(grid.ColumnCount):
         grid.Columns[i].Name = caps[i]
 
@@ -107,12 +106,13 @@ def ClearGrid(grid, caps=[]):
 def ReaderToGrid(grid, reader):
     ClearGrid(grid)
     cname = [row['ColumnName'] for row in reader.GetSchemaTable().Rows]
-    grid.ColumnCount=len(cname)
+    grid.ColumnCount = len(cname)
     for i in range(len(cname)):
         grid.Columns[i].Name = cname[i]
     for c in reader:
         row = [c[i] for i in range(len(cname))]
-        if len(row) == 1 and type(row[0]) == int: row[0] = str(row[0])
+        if len(row) == 1 and type(row[0]) == int:
+            row[0] = str(row[0])
         grid.Rows.Add(*row)
 
 
@@ -130,7 +130,8 @@ def DictListToGrid(grid, dlist):
     ClearGrid(grid, caps=cname)
     for c in dlist:
         row = [str(c[k]).strip() for k in cname]
-        if len(row) == 1 and type(row[0]) == int: row[0] = str(row[0])
+        if len(row) == 1 and type(row[0]) == int:
+            row[0] = str(row[0])
         grid.Rows.Add(*row)
 
 
@@ -146,6 +147,3 @@ def DataTableToGrid(grid, datatable, tabname, columns):
             grid.Columns[cname].DefaultCellStyle.Format = "d"
         if tname == 'TIME':
             grid.Columns[cname].DefaultCellStyle.Format = "T"
-
-
-    
