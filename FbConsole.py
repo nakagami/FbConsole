@@ -434,7 +434,7 @@ class MainForm(Forms.Form):
         conn = self.conn_from_node(node)
         node.Nodes.Clear()
         img = self.imgidx('domain')
-        for dm in conn_from_node(node).domains():
+        for dm in self.conn_from_node(node).domains():
             n = Forms.TreeNode(
                 dm['NAME'].strip()+' '+fbutil.fieldtype_to_string(dm, False), 
                 img, img)
