@@ -1,18 +1,18 @@
 ##############################################################################
-# Copyright (c) 2007-2009, Hajime Nakagami<nakagami@da2.so-net.ne.jp>
+# Copyright (c) 2007-2009,2015, Hajime Nakagami<nakagami@gmail.com>
 # All rights reserved.
-# 
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
 # are met:
-# 
+#
 #   1. Redistributions of source code must retain the above copyright notice,
 #      this list of conditions and the following disclaimer.
-# 
+#
 #   2. Redistributions in binary form must reproduce the above copyright
 #      notice, this list of conditions and the following disclaimer in the
 #      documentation and/or other materials provided with the distribution.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 # "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 # LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
@@ -26,15 +26,15 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 ##############################################################################
-import clr, sys
+import clr
+import sys
 clr.AddReference("System.Windows.Forms")
 clr.AddReference("System.Drawing")
 clr.AddReference("System.Data")
 from System.Windows import Forms
-from System.Drawing import Point, Size, Image, Color
+from System.Drawing import Size, Image, Color
 from System.Data import DataTable
-from System.IO import *
-from System.IO.IsolatedStorage import IsolatedStorageFileStream
+from System.IO import UserPasswordForm
 from System.Convert import IsDBNull
 from System.Type import GetType
 import System.Threading.Mutex
@@ -44,17 +44,20 @@ import dialogform
 import fbutil
 import fbddl
 
+
 def is_Mono():
     if GetType("Mono.Runtime"):
         return True
     else:
         return False
 
+
 APP_NAME = 'FbConsole'
 __version__ = '0.10.0'
-img_files = ['root', 'server', 'database', 'domain', 'object', 'function', 
-    'generators', 'generator', 'procedures', 'procedure', 
-    'systemtables', 'systemtable', 'tables', 'table', 
+img_files = [
+    'root', 'server', 'database', 'domain', 'object', 'function',
+    'generators', 'generator', 'procedures', 'procedure',
+    'systemtables', 'systemtable', 'tables', 'table',
     'trigger', 'trigger_inact', 'view', 'search', 'key', 'column',
 ]
 
@@ -76,16 +79,20 @@ UK_COLOR = Color.LightGray
 INPUT_COLOR = Color.LightYellow
 NEW_DATA_COLOR = Color.LightBlue
 
+
 def eventhook(fn):
     return fn   # NDEBUG
+
     def f(*args):
         print fn, args
         return fn(*args)
     return f
 
+
 def sqlquote(s):
     if type(s) == str:
         return s.replace("'", "''")
+
 
 class BackupRestoreForm(Forms.Form):
     def __init__(self, conn_d, filename, is_backup):
@@ -108,33 +115,32 @@ class BackupRestoreForm(Forms.Form):
         self._filePath.TabIndex = 1
         self.Controls.Add(self._filePath)
         self._pathButton = Forms.Button(
-                            Text="...", Left=406, Top=10, Size=Size(24,24))
+            Text="...", Left=406, Top=10, Size=Size(24, 24))
         self._pathButton.Click += self.OnBakcupFileOpen
         self._pathButton.TabIndex = 2
         self.Controls.Add(self._pathButton)
         if self.is_backup:
-            self._metaonly = Forms.CheckBox(Left=50, Top=35, 
-                                        Text="Metadata Only", AutoSize=True)
+            self._metaonly = Forms.CheckBox(
+                Left=50, Top=35, Text="Metadata Only", AutoSize=True)
             self.Controls.Add(self._metaonly)
         else:
-            self._overwrite = Forms.CheckBox(Left=50, Top=35, 
-                                        Text="Overwrite", AutoSize=True)
+            self._overwrite = Forms.CheckBox(
+                Left=50, Top=35, Text="Overwrite", AutoSize=True)
             self.Controls.Add(self._overwrite)
 
-        self.AcceptButton = Forms.Button(Left=267, Top=40, Size=Size(75,23))
+        self.AcceptButton = Forms.Button(Left=267, Top=40, Size=Size(75, 23))
         if self.is_backup:
-            self.AcceptButton.Text="&Backup"
+            self.AcceptButton.Text = "&Backup"
         else:
-            self.AcceptButton.Text="&Restore"
+            self.AcceptButton.Text = "&Restore"
         self.AcceptButton.Click += self.OnOk
         self.AcceptButton.TabIndex = 3
         self.Controls.Add(self.AcceptButton)
 
         self.CancelButton = Forms.Button(
-                        Text="&Close", Left=348, Top=40, Size=Size(75, 23))
+            Text="&Close", Left=348, Top=40, Size=Size(75, 23))
         self.CancelButton.TabIndex = 4
         self.Controls.Add(self.CancelButton)
-
 
         self._result = Forms.TextBox(Left=20, Top=85, Width=400, Height=210)
         self._result.Multiline = True
@@ -153,7 +159,7 @@ class BackupRestoreForm(Forms.Form):
         self.Height = 340
         self._result.Text = ''
 
-        if self.conn_d['Password'] == None:
+        if self.conn_d['Password'] is None:
             dialog = UserPasswordForm(self.conn_d)
             r = dialog.ShowDialog(self)
             if r != Forms.DialogResult.OK:
@@ -348,30 +354,10 @@ class MainForm(Forms.Form):
             conn.execute_noq(sql)
             return True
         except Exception, e:
-            Forms.MessageBox.Show(str(e) + '\n' + fbsql.last_execute_sql, 
-                                                                    "Error")
+            Forms.MessageBox.Show(str(e), "Error")
             return False
 
     def ChangeMenuEnabled(self, node):
-        if node.Tag['NODE_TYPE'] != 'TOP' and sqlutil.can_use_sqlserver:
-            self.menu['IMPORT_MSSQL'].Enabled = True
-            self.menu['EXPORT_MSSQL'].Enabled = True
-        else:
-            self.menu['IMPORT_MSSQL'].Enabled = False
-            self.menu['EXPORT_MSSQL'].Enabled = False
-        if node.Tag['NODE_TYPE'] != 'TOP' and orautil.can_use_oracle:
-            self.menu['IMPORT_ORACLE'].Enabled = True
-            self.menu['EXPORT_ORACLE'].Enabled = True
-        else:
-            self.menu['IMPORT_ORACLE'].Enabled = False
-            self.menu['EXPORT_ORACLE'].Enabled = False
-        if node.Tag['NODE_TYPE'] != 'TOP' and sqliteutil.can_use_sqlite:
-            self.menu['IMPORT_SQLITE'].Enabled = True
-            self.menu['EXPORT_SQLITE'].Enabled = True
-        else:
-            self.menu['IMPORT_SQLITE'].Enabled = False
-            self.menu['EXPORT_SQLITE'].Enabled = False
-
         if node.Tag['NODE_TYPE'] == 'TOP':
             self.menu['REG_SERVER'].Enabled = True
         else:
@@ -448,7 +434,7 @@ class MainForm(Forms.Form):
         conn = self.conn_from_node(node)
         node.Nodes.Clear()
         img = self.imgidx('domain')
-        for dm in self.conn_from_node(node).domains():
+        for dm in conn_from_node(node).domains():
             n = Forms.TreeNode(
                 dm['NAME'].strip()+' '+fbutil.fieldtype_to_string(dm, False), 
                 img, img)
@@ -992,11 +978,11 @@ class MainForm(Forms.Form):
             ['COPY_TABLE', 'Copy Table &to ...', self.OnCopyTable],
             ['DROP_TABLE', '&Drop Table', self.OnDropTable],
             ['GEN_TRIGGER', 'Create &New Generator and Trigger', 
-                                            self.OnCreateGeneratorAndTrigger],
+                self.OnCreateGeneratorAndTrigger],
             ['ADD_COLUMN', '&Add Column', self.OnAddColumn],
             ['ADD_PRIMARY_KEY', 'Add &Primary Key', self.OnAddPrimaryKey],
             ['SHOW_REFERENCED_COLUMNS', 'Show &Referenced Table', 
-                                            self.OnShowReferencedColumns],
+                self.OnShowReferencedColumns],
             ['SHOW_GRANT', 'Show Grant &Users', self.OnShowGrant],
             ['GRANT_RELATION', '&Grant', self.OnGrantRelation],
         ]
@@ -1301,9 +1287,10 @@ class MainForm(Forms.Form):
                     if r != Forms.DialogResult.OK:
                         return
                 try:
-                    fbutil.user_mod(d, dialog._user.Text, 
+                    fbutil.user_mod(
+                        d, dialog._user.Text,
                         password = dialog._password.Text,
-                        first = dialog._first.Text, 
+                        first = dialog._first.Text,
                         middle = dialog._middle.Text,
                         last = dialog._last.Text)
                 except Exception, e:
@@ -1386,7 +1373,7 @@ class MainForm(Forms.Form):
             sqlStmt = "update rdb$procedure_parameters " + \
                     "set rdb$description = '" + sqlquote(description) + "' " + \
                     "where rdb$parameter_name='" + name + "' " + \
-                    "and rdb$procedure_name='" + node.Name + "'" 
+                    "and rdb$procedure_name='" + node.Name + "'"
         else:
             if self.dg_mode == 'TABLES' or self.dg_mode == 'VIEWS':
                 tab_name = 'rdb$relations'
@@ -1403,15 +1390,15 @@ class MainForm(Forms.Form):
             elif self.dg_mode == 'PROCEDURES':
                 tab_name = 'rdb$procedures'
                 field_name = 'rdb$procedure_name'
-            sqlStmt = "update %s set rdb$description = '%s' where %s='%s'" \
-                        % (tab_name, sqlquote(description), field_name, name)
+            sqlStmt = "update %s set rdb$description = '%s' where %s='%s'" % (
+                tab_name, sqlquote(description), field_name, name)
         self.conn_from_node(node).execute_noq(sqlStmt)
-    
+
     @eventhook
     def OnRowsAdded(self, sender, args):
         return
         if self.dg_mode == 'TABLE_DATA':
-            ri = args.RowIndex -1
+            ri = args.RowIndex - 1
             for ci in range(self._dg.ColumnCount):
                 self._dg.Rows[ri].Cells[ci].Style.BackColor = INPUT_COLOR
 
@@ -1425,66 +1412,90 @@ class MainForm(Forms.Form):
             fbutil.user_del(d, args.Row.Cells[0].Value)
             return
         elif self.dg_mode == 'DOMAINS':
-            if self.ConfirmSql(self.conn_from_node(node),
-                "drop domain " +  args.Row.Cells[0].Value):
+            if self.ConfirmSql(
+                self.conn_from_node(node),
+                "drop domain " + args.Row.Cells[0].Value
+            ):
                 self.PopulateDomains(node)
                 return
         elif self.dg_mode == 'EXCEPTIONS':
-            if self.ConfirmSql(self.conn_from_node(node),
-                "drop exception " +  args.Row.Cells[0].Value.strip()):
+            if self.ConfirmSql(
+                self.conn_from_node(node),
+                "drop exception " + args.Row.Cells[0].Value.strip()
+            ):
                 return
         elif self.dg_mode == 'FUNCTIONS':
-            if self.ConfirmSql(self.conn_from_node(node),
-                "drop external function " +  args.Row.Cells[0].Value.strip()):
+            if self.ConfirmSql(
+                self.conn_from_node(node),
+                "drop external function " + args.Row.Cells[0].Value.strip()
+            ):
                 return
         elif self.dg_mode == 'GENERATORS':
-            if self.ConfirmSql(self.conn_from_node(node),
-                "drop generator " +  args.Row.Cells['NAME'].Value.strip()):
+            if self.ConfirmSql(
+                self.conn_from_node(node),
+                "drop generator " + args.Row.Cells['NAME'].Value.strip()
+            ):
                 return
         elif self.dg_mode == 'PROCEDURES':
-            if self.ConfirmSql(self.conn_from_node(node),
-                "drop procedure " +  args.Row.Cells[0].Value.strip()):
+            if self.ConfirmSql(
+                self.conn_from_node(node),
+                "drop procedure " + args.Row.Cells[0].Value.strip()
+            ):
                 return
         elif self.dg_mode == 'ROLES':
-            if self.ConfirmSql(self.conn_from_node(node),
-                "drop role " +  args.Row.Cells[0].Value.strip()):
+            if self.ConfirmSql(
+                self.conn_from_node(node),
+                "drop role " + args.Row.Cells[0].Value.strip()
+            ):
                 return
         elif self.dg_mode == 'ROLE':
-            if self.ConfirmSql(self.conn_from_node(node),
-                "revoke " + node.Name + " from " + \
-                args.Row.Cells[0].Value.strip()):
+            if self.ConfirmSql(
+                self.conn_from_node(node),
+                "revoke %s from %s" %
+                (node.Name, args.Row.Cells[0].Value.strip())
+            ):
                 return
         elif self.dg_mode == 'TABLE_CONSTRAINTS':
-            if self.ConfirmSql(self.conn_from_node(node),
-                "alter table " + node.Name + " drop constraint " + \
-                args.Row.Cells[0].Value):
+            if self.ConfirmSql(
+                self.conn_from_node(node),
+                "alter table %s drop constraint %s" %
+                (node.Name, args.Row.Cells[0].Value)
+            ):
                 self.PopulateTable(node)
                 return
         elif self.dg_mode == 'SHOW_INDEX':
-            if self.ConfirmSql(self.conn_from_node(node),
-                "drop index " +  args.Row.Cells[0].Value):
+            if self.ConfirmSql(
+                self.conn_from_node(node),
+                "drop index %s " % (args.Row.Cells[0].Value)
+            ):
                 return
         elif self.dg_mode == 'TABLES':
-            if self.ConfirmSql(self.conn_from_node(node),
-                'drop table "' +  args.Row.Cells[0].Value.strip() + '"'):
+            if self.ConfirmSql(
+                self.conn_from_node(node),
+                'drop tbale "%s"' % args.Row.Cells[0].Value.strip()
+            ):
                 self.PopulateTables(node)
                 return
         elif self.dg_mode == 'TABLE':
-            if self.ConfirmSql(self.conn_from_node(node),
-                'alter table "' + node.Name + \
-                '" drop "' + args.Row.Cells[0].Value.strip() + '"'):
+            if self.ConfirmSql(
+                self.conn_from_node(node),
+                'alter table "%s" drop "%s"' %
+                (node.Name, args.Row.Cells[0].Value.strip())
+            ):
                 self.PopulateTable(node)
                 return
         elif self.dg_mode == 'VIEWS':
-            if self.ConfirmSql(self.conn_from_node(node),
-                'drop view "' +  args.Row.Cells[0].Value.strip() + '"'):
+            if self.ConfirmSql(
+                self.conn_from_node(node),
+                'drop view "%s"' % (args.Row.Cells[0].Value.strip(),)
+            ):
                 self.PopulateViews(node)
                 return
         elif self.dg_mode == 'TABLE_DATA':
             if args.Row.Cells[0].Style.BackColor == INPUT_COLOR:
                 return
             conn = self.conn_from_node(node)
-            pks =  conn.primary_keys(node.Name)
+            pks = conn.primary_keys(node.Name)
             t = [c['TYPE_NAME'].strip() for c in conn.columns(node.Name)]
             if len(pks):
                 cond = ''
@@ -1492,31 +1503,36 @@ class MainForm(Forms.Form):
                     cname = self._dg.DataSource.DataSource.Columns[i].ColumnName
                     if cname in pks:
                         if IsDBNull(args.Row.Cells[i].Value):
-                            raise UserWarning, "Can't delete."
+                            raise UserWarning("Can't delete.")
                         if len(cond):
                             cond += ' and '
-                        cond += fbutil.expr_sql(cname, 
-                                            args.Row.Cells[i].Value, t[i])
-                if self.ConfirmSql(self.conn_from_node(node),
-                    'delete from "' + node.Name + '" where ' + cond):
+                        cond += fbutil.expr_sql(cname, args.Row.Cells[i].Value, t[i])
+                if self.ConfirmSql(
+                    self.conn_from_node(node),
+                    'delete from "' + node.Name + '" where ' + cond
+                ):
                     return
         elif self.dg_mode == 'SHOW_GRANT_RELATION':
             if len(args.Row.Cells) == 4 and args.Row.Cells[2].Value:
                 sql = "revoke "
-                sql += ','.join([s + '(' + args.Row.Cells[2].Value + ')' 
-                                for s in args.Row.Cells[1].Value.split(',')])
+                sql += ','.join(
+                    [s + '(' + args.Row.Cells[2].Value + ')' for s in args.Row.Cells[1].Value.split(',')]
+                )
                 sql += ' on ' + node.Name + " from " + args.Row.Cells[0].Value
             else:
-                sql = "revoke " + args.Row.Cells[1].Value + \
-                        ' on ' + node.Name + " from " + args.Row.Cells[0].Value
+                sql = "revoke %s on %s from %s" % (
+                    args.Row.Cells[1].Value, node.Name, args.Row.Cells[0].Value)
             if self.ConfirmSql(self.conn_from_node(node), sql):
                 return
         elif self.dg_mode == 'SHOW_GRANT_PROCEDURE':
-            if self.ConfirmSql(self.conn_from_node(node), "revoke " + \
-                args.Row.Cells[1].Value + ' on procedure ' + node.Name + \
-                " from " + args.Row.Cells[0].Value):
+            if (
+                self.ConfirmSql(
+                    self.conn_from_node(node),
+                    "revoke %s on procedure %s from %s" %
+                    (args.Row.Cells[1].Value, node.Name, args.Row.Cells[0].Value))
+            ):
                 return
-            
+
         args.Cancel = True
 
     @eventhook
@@ -1538,15 +1554,15 @@ class MainForm(Forms.Form):
         if r == Forms.DialogResult.OK:
             for node in self._tv.Nodes[0].Nodes:
                 if node.Text == dialog._alias.Text:
-                    Forms.MessageBox.Show(
-                        'Server "'+ dialog._alias.Text +'" is alredy exsists.',
-                        'Error')
+                    Forms.MessageBox.Show('Server "%s is already exists.' % (dialog._alias.Text,), 'Error')
                     return
             img = self.imgidx('server')
             node = Forms.TreeNode(dialog._alias.Text, img, img)
             node.ContextMenuStrip = self._cmenu_server
-            node.Tag = {'NODE_TYPE': 'SERVER', 
-                        'SERVER': dialog._server.Text}
+            node.Tag = {
+                'NODE_TYPE': 'SERVER',
+                'SERVER': dialog._server.Text,
+            }
             self._tv.BeginUpdate()
             self._tv.Nodes[0].Nodes.Add(node)
             self._tv.EndUpdate()
@@ -1629,15 +1645,16 @@ class MainForm(Forms.Form):
         dialog = dialogform.UserAddForm()
         r = dialog.ShowDialog(self)
         if r != Forms.DialogResult.OK:
-            return 
+            return
         if not node.Tag.get('AlreadyLogin', False):
             dialog = dialogform.UserPasswordForm(d)
             r = dialog.ShowDialog(self)
             if r != Forms.DialogResult.OK:
                 return
-        fbutil.user_add(d, dialog._user.Text, dialog._password.Text, 
-            first = dialog._first.Text, middle = dialog._middle.Text,
-            last = dialog._last.Text)
+        fbutil.user_add(
+            d, dialog._user.Text, dialog._password.Text,
+            first=dialog._first.Text, middle=dialog._middle.Text,
+            last=dialog._last.Text)
         if self.dg_mode == 'USERS_LIST':
             self.OnUsersList(sender, args)
         node.Tag['User'] = d['User']
@@ -1698,7 +1715,7 @@ class MainForm(Forms.Form):
         d = self.node_to_conndict(node)
         if not d:
             return
-        if d['Password'] == None:
+        if d['Password'] is None:
             dialog = dialogform.UserPasswordForm(d)
             r = dialog.ShowDialog(self)
             if r != Forms.DialogResult.OK:
@@ -1711,7 +1728,7 @@ class MainForm(Forms.Form):
         d = self.node_to_conndict(node)
         if not d:
             return
-        if d['Password'] == None:
+        if d['Password'] is None:
             dialog = dialogform.UserPasswordForm(d)
             r = dialog.ShowDialog(self)
             if r != Forms.DialogResult.OK:
@@ -1727,9 +1744,9 @@ class MainForm(Forms.Form):
         d = self.node_to_conndict(node)
         if not d:
             return
-        dialog = BackupRestoreForm(d, 
-                node.Tag.get('BACKUP_FILENAME'), sender.Tag == 'BACKUP_DB')
-        r = dialog.ShowDialog(self)
+        dialog = BackupRestoreForm(
+            d, node.Tag.get('BACKUP_FILENAME'), sender.Tag == 'BACKUP_DB')
+        dialog.ShowDialog(self)
         if dialog.conn_d.get('PrevUser'):
             node.Tag['User'] = dialog.conn_d['User']
             node.Tag['Password'] = dialog.conn_d['Password']
@@ -1760,7 +1777,7 @@ class MainForm(Forms.Form):
     @eventhook
     def OnRenameDomain(self, sender, args):
         node = self.select_node(sender, args, node_type='DOMAIN')
-        for r in self.conn_from_node(node).domains(node.Name): # only one 
+        for r in self.conn_from_node(node).domains(node.Name):  # only one
             sql = 'alter domain ' + r['NAME'].strip() + '\n'
             sql += '    to new_' + r['NAME'].strip() + '\n'
             d = self.node_to_conndict(node.Parent.Parent)
@@ -1774,7 +1791,7 @@ class MainForm(Forms.Form):
     @eventhook
     def OnChangeTypeDomain(self, sender, args):
         node = self.select_node(sender, args, node_type='DOMAIN')
-        for r in self.conn_from_node(node).domains(node.Name): # only one 
+        for r in self.conn_from_node(node).domains(node.Name):  # only one
             sql = 'alter domain ' + r['NAME'].strip() + '\n'
             sql += '    type ' + fbutil.fieldtype_to_string(r) + '\n'
             d = self.node_to_conndict(node.Parent.Parent)
@@ -1784,11 +1801,11 @@ class MainForm(Forms.Form):
                 node = node.Parent
                 self.PopulateDomains(node)
                 self.DomainsToGrid(self.conn_from_node(node))
-    
+
     @eventhook
     def OnSetDefaultDomain(self, sender, args):
         node = self.select_node(sender, args, node_type='DOMAIN')
-        for r in self.conn_from_node(node).domains(node.Name): # only one 
+        for r in self.conn_from_node(node).domains(node.Name):  # only one
             sql = 'alter domain ' + r['NAME'].strip() + ' drop default;\n'
             sql += 'alter domain ' + r['NAME'].strip() + '\n    set '
             if IsDBNull(r['DEFAULT_SOURCE']):
@@ -1802,11 +1819,11 @@ class MainForm(Forms.Form):
                 node = node.Parent
                 self.PopulateDomains(node)
                 self.DomainsToGrid(self.conn_from_node(node))
-    
+
     @eventhook
     def OnAddCheckDomain(self, sender, args):
         node = self.select_node(sender, args, node_type='DOMAIN')
-        for r in self.conn_from_node(node).domains(node.Name): # only one 
+        for r in self.conn_from_node(node).domains(node.Name):  # only one
             sql = 'alter domain ' + r['NAME'].strip() + ' drop constraint;\n'
             sql += 'alter domain ' + r['NAME'].strip() + '\n    add '
             if IsDBNull(r['VALIDATION_SOURCE']):
@@ -1820,12 +1837,14 @@ class MainForm(Forms.Form):
                 node = node.Parent
                 self.PopulateDomains(node)
                 self.DomainsToGrid(self.conn_from_node(node))
-    
+
     @eventhook
     def OnDropDomain(self, sender, args):
         node = self.select_node(sender, args, node_type='DOMAIN')
-        if self.ConfirmSql(self.conn_from_node(node), 
-            "drop domain " + node.Name):
+        if self.ConfirmSql(
+            self.conn_from_node(node),
+            "drop domain " + node.Name
+        ):
             node = node.Parent
             self._tv.SelectedNode = node
             self.PopulateDomains(node)
@@ -1834,7 +1853,8 @@ class MainForm(Forms.Form):
     def OnCreateException(self, sender, args):
         node = self.select_node(sender, args, node_type='EXCEPTIONS')
         d = self.node_to_conndict(node.Parent)
-        dialog = FbSqlForm.FbSqlForm(d, self.user_pref, 
+        dialog = FbSqlForm.FbSqlForm(
+            d, self.user_pref,
             sql="create exception XXXXX\n    'XXXX Exception message'")
         r = dialog.ShowDialog(self)
         if r == Forms.DialogResult.OK:
@@ -1860,8 +1880,9 @@ entry_point 'string2blob' module_name 'fbudf';"""
         r = dialog.ShowDialog(self)
         if r == Forms.DialogResult.OK:
             try:
-                if self.conn_from_node(node).copy_table(node.Name, dialog.text,
-                                                            dialog.schema_only):
+                if self.conn_from_node(node).copy_table(
+                    node.Name, dialog.text, dialog.schema_only
+                ):
                     self.PopulateTables(node.Parent)
                     self._tv.SelectedNode = node.Parent
                 else:
@@ -1873,8 +1894,10 @@ entry_point 'string2blob' module_name 'fbudf';"""
     @eventhook
     def OnDropTable(self, sender, args):
         node = self.select_node(sender, args, node_type='TABLE')
-        if self.ConfirmSql(self.conn_from_node(node),
-            'drop table "' + node.Name + '"'):
+        if self.ConfirmSql(
+            self.conn_from_node(node),
+            'drop table "%s"' % (node.Name,)
+        ):
             node = node.Parent
             self.PopulateTables(node)
             self.ReaderToGrid(self.conn_from_node(node).tables())
@@ -1882,7 +1905,8 @@ entry_point 'string2blob' module_name 'fbudf';"""
     @eventhook
     def OnRenameTable(self, sender, args):
         node = self.select_node(sender, args, node_type='TABLE')
-        dialog = dialogform.SimpleSqlForm(self.conn_from_node(node),
+        dialog = dialogform.SimpleSqlForm(
+            self.conn_from_node(node),
             'alter table "' + node.Text + '" rename to new_' + node.Text)
         r = dialog.ShowDialog(self)
         if r == Forms.DialogResult.OK:
@@ -1891,8 +1915,7 @@ entry_point 'string2blob' module_name 'fbudf';"""
     @eventhook
     def OnCreateGenerator(self, sender, args):
         node = self.select_node(sender, args, node_type='GENERATORS')
-        dialog = dialogform.SimpleSqlForm(
-                    self.conn_from_node(node), "create generator XXXXX")
+        dialog = dialogform.SimpleSqlForm(self.conn_from_node(node), "create generator XXXXX")
         r = dialog.ShowDialog(self)
         if r == Forms.DialogResult.OK:
             self.PopulateGenerators(node)
@@ -1900,9 +1923,11 @@ entry_point 'string2blob' module_name 'fbudf';"""
     @eventhook
     def OnSetGenerator(self, sender, args):
         node = self.select_node(sender, args, node_type='GENERATOR')
-        dialog = dialogform.SimpleSqlForm(self.conn_from_node(node),
-            'set generator "' + node.Name + '" to ' + \
-            str(self.conn_from_node(node).get_generator_id(node.Name)))
+        dialog = dialogform.SimpleSqlForm(
+            self.conn_from_node(node),
+            'set generator "%s" to %s' %
+            (node.Name, str(self.conn_from_node(node).get_generator_id(node.Name)))
+        )
         r = dialog.ShowDialog(self)
         if r == Forms.DialogResult.OK:
             self._tv.SelectedNode = node.Parent
@@ -1910,8 +1935,7 @@ entry_point 'string2blob' module_name 'fbudf';"""
     @eventhook
     def OnDropGenerator(self, sender, args):
         node = self.select_node(sender, args, node_type='GENERATOR')
-        if self.ConfirmSql(self.conn_from_node(node),
-            'drop generator "' + node.Name + '"'):
+        if self.ConfirmSql(self.conn_from_node(node), 'drop generator "%s"' % (node.Name,)):
             node = node.Parent
             self._tv.SelectedNode = node
             self.PopulateGenerators(node)
@@ -1949,25 +1973,27 @@ entry_point 'string2blob' module_name 'fbudf';"""
             node = self.select_node(sender, args, node_type='VIEW')
         if not node:
             node = self.select_node(sender, args, node_type='PROCEDURE')
-        priv = {'S' : 'SELECT', 
-            'D' : 'DELETE', 
-            'I' : 'INSERT', 
-            'U' : 'UPDATE',
-            'R' : 'REFERENCES',
-            'X' : 'EXECUTE',
-            }
+        priv = {
+            'S': 'SELECT',
+            'D': 'DELETE',
+            'I': 'INSERT',
+            'U': 'UPDATE',
+            'R': 'REFERENCES',
+            'X': 'EXECUTE',
+        }
         d = {}
         has_field_name = False
         for r in self.conn_from_node(node).grant_users(node.Name):
-            d.setdefault((r['NAME'].strip(), r['GRANT_OPTION'], 
-                r['FIELD_NAME']), []).append(priv[r['PRIVILEGE'].strip()])
+            d.setdefault(
+                (r['NAME'].strip(), r['GRANT_OPTION'], r['FIELD_NAME']), []
+            ).append(priv[r['PRIVILEGE'].strip()])
             if not IsDBNull(r['FIELD_NAME']):
                 has_field_name = True
         dl = []
         for k in d:
             e = {
-                'NAME' : k[0],
-                'PRIVILEGE' : ','.join(d[k]),
+                'NAME': k[0],
+                'PRIVILEGE': ','.join(d[k]),
             }
             if has_field_name:
                 e['FIELD_NAME'] = k[2]
@@ -1989,10 +2015,10 @@ entry_point 'string2blob' module_name 'fbudf';"""
             node = self.select_node(sender, args, node_type='VIEW')
 
         d = self.node_to_conndict(node.Parent.Parent)
-        dialog = FbSqlForm.FbSqlForm(d, self.user_pref, 
-            sql = '''grant SELECT,DELETE,INSERT,UPDATE,REFERENCES
-on %s to SYSDBA 
-with grant option''' % (node.Name, ))
+        dialog = FbSqlForm.FbSqlForm(
+            d, self.user_pref,
+            sql='grant SELECT,DELETE,INSERT,UPDATE,REFERENCES on %s to SYSDBA with grant option' % (node.Name, )
+        )
         r = dialog.ShowDialog(self)
         if r == Forms.DialogResult.OK:
             self.OnShowGrant(sender, args)
@@ -2001,10 +2027,10 @@ with grant option''' % (node.Name, ))
     def OnGrantProcedure(self, sender, args):
         node = self.select_node(sender, args, node_type='PROCEDURE')
         d = self.node_to_conndict(node.Parent.Parent)
-        dialog = FbSqlForm.FbSqlForm(d, self.user_pref, 
-            sql = '''grant EXECUTE 
-on procedure %s to SYSDBA 
-with grant option''' % (node.Name, ))
+        dialog = FbSqlForm.FbSqlForm(
+            d, self.user_pref,
+            sql='grant EXECUTE on procedure %s to SYSDBA with grant option' % (node.Name,)
+        )
         r = dialog.ShowDialog(self)
         if r == Forms.DialogResult.OK:
             self.OnShowGrant(sender, args)
@@ -2035,8 +2061,10 @@ create table XXXXX (
     @eventhook
     def OnAddColumn(self, sender, args):
         node = self.select_node(sender, args, node_type='TABLE')
-        dialog = dialogform.SimpleSqlForm(self.conn_from_node(node),
-           "alter table " + node.Name + " add XXXXX varchar(255)")
+        dialog = dialogform.SimpleSqlForm(
+            self.conn_from_node(node),
+            "alter table %s add XXXXX varchar(255)" % (node.Name)
+        )
         r = dialog.ShowDialog(self)
         if r == Forms.DialogResult.OK:
             self.PopulateTable(node)
@@ -2061,7 +2089,7 @@ create table XXXXX (
             if r == Forms.DialogResult.OK:
                 self.PopulateTable(node)
                 self.TableColumnsToGrid(self.conn_from_node(node), node.Name)
-    
+
     @eventhook
     def OnShowReferencedColumns(self, sender, args):
         node = self.select_node(sender, args, node_type='TABLE')
@@ -2072,8 +2100,9 @@ create table XXXXX (
     @eventhook
     def OnRenameColumn(self, sender, args):
         node = self.select_node(sender, args, node_type='COLUMN')
-        dialog = dialogform.SimpleSqlForm(self.conn_from_node(node),
-           "alter table " + node.Parent.Name + " alter column " + node.Name
+        dialog = dialogform.SimpleSqlForm(
+            self.conn_from_node(node),
+            "alter table " + node.Parent.Name + " alter column " + node.Name
             + " to new_" + node.Name)
         r = dialog.ShowDialog(self)
         if r == Forms.DialogResult.OK:
@@ -2082,9 +2111,11 @@ create table XXXXX (
     @eventhook
     def OnSetDefault(self, sender, args):
         node = self.select_node(sender, args, node_type='COLUMN')
-        dialog = dialogform.SimpleSqlForm(self.conn_from_node(node),
-           "alter table " + node.Parent.Name + " alter column " + node.Name
-            + " set  default XXXXX")
+        dialog = dialogform.SimpleSqlForm(
+            self.conn_from_node(node),
+            "alter table %s alter column set default XXXXX" %
+            (node.Parent.Name, node.Name)
+        )
         r = dialog.ShowDialog(self)
         if r == Forms.DialogResult.OK:
             self.PopulateTable(node.Parent)
@@ -2092,9 +2123,11 @@ create table XXXXX (
     @eventhook
     def OnDropDefault(self, sender, args):
         node = self.select_node(sender, args, node_type='COLUMN')
-        if self.ConfirmSql(self.conn_from_node(node),
-            "alter table " + node.Parent.Name + " alter column " + node.Name
-            + " drop default"):
+        if self.ConfirmSql(
+            self.conn_from_node(node),
+            "alter table %s alter column %s drop default" %
+            (node.Parent.Name, node.Name)
+        ):
             self.PopulateTable(node.Parent)
 
     @eventhook
@@ -2103,8 +2136,10 @@ create table XXXXX (
         s = node.Text.split()
         s.insert(1, 'type')
         s = ' '.join(s)
-        dialog = dialogform.SimpleSqlForm(self.conn_from_node(node),
-           "alter table " + node.Parent.Name + " alter column " + s)
+        dialog = dialogform.SimpleSqlForm(
+            self.conn_from_node(node),
+            "alter table %s alter columns %s" % (node.Parent.Name, s)
+        )
         r = dialog.ShowDialog(self)
         if r == Forms.DialogResult.OK:
             self.PopulateTable(node.Parent)
@@ -2112,16 +2147,20 @@ create table XXXXX (
     @eventhook
     def OnDropColumn(self, sender, args):
         node = self.select_node(sender, args, node_type='COLUMN')
-        if self.ConfirmSql(self.conn_from_node(node),
-            "alter table " + node.Parent.Name + " drop " + node.Name):
+        if self.ConfirmSql(
+            self.conn_from_node(node),
+            "alter table " + node.Parent.Name + " drop " + node.Name
+        ):
             self.PopulateTable(node.Parent)
 
     @eventhook
     def OnCreateIndex(self, sender, args):
         node = self.select_node(sender, args, node_type='COLUMN')
-        dialog = dialogform.SimpleSqlForm(self.conn_from_node(node),
-            "create index " + node.Name + "_INDEX on " \
-            + node.Parent.Name + "(" + node.Name + ")")
+        dialog = dialogform.SimpleSqlForm(
+            self.conn_from_node(node),
+            "create index %s_INDEX on %s(%s)" %
+            (node.Name, node.Parent.Name, node.Name)
+        )
         r = dialog.ShowDialog(self)
         if r == Forms.DialogResult.OK:
             pass
@@ -2130,7 +2169,8 @@ create table XXXXX (
     def OnAddUnique(self, sender, args):
         node = self.select_node(sender, args, node_type='COLUMN')
         tab_name = node.Parent.Name
-        dialog = dialogform.SimpleSqlForm(self.conn_from_node(node),
+        dialog = dialogform.SimpleSqlForm(
+            self.conn_from_node(node),
             "alter table " + tab_name + " add unique(" + node.Name + ")")
         r = dialog.ShowDialog(self)
         if r == Forms.DialogResult.OK:
@@ -2141,13 +2181,15 @@ create table XXXXX (
         node = self.select_node(sender, args, node_type='COLUMN')
         tab_name = node.Parent.Name
         dialog = dialogform.TableColumnForm(
-                'Select reference table & column.', self.conn_from_node(node))
+            'Select reference table & column.', self.conn_from_node(node))
         r = dialog.ShowDialog(self)
         if r == Forms.DialogResult.OK:
-            dialog = dialogform.SimpleSqlForm(self.conn_from_node(node),
-                "alter table %s  add foreign key(%s) references %s(%s)" % \
-                (tab_name, node.Name, dialog.table_name, dialog.column_name) \
-                + "on update cascade on delete cascade")
+            dialog = dialogform.SimpleSqlForm(
+                self.conn_from_node(node),
+                """alter table %s  add foreign key(%s) references %s(%s)
+                    on update cascade on delete cascade""" %
+                (tab_name, node.Name, dialog.table_name, dialog.column_name)
+            )
             r = dialog.ShowDialog(self)
             if r == Forms.DialogResult.OK:
                 pass
@@ -2180,8 +2222,9 @@ create table XXXXX (
             formutil.DataTableToGrid(self._dg, data_table, tab_name, columns)
             data_adapter.Dispose()
             table_pks = conn.primary_keys(tab_name)
-            table_fks = [fk['FIELD_NAME'].strip() 
-                                        for fk in conn.foreign_keys(tab_name)]
+            table_fks = [
+                fk['FIELD_NAME'].strip() for fk in conn.foreign_keys(tab_name)
+            ]
             table_uks = conn.unique_keys(tab_name)
             td = {}
             ta = []
@@ -2209,8 +2252,7 @@ create table XXXXX (
             Forms.MessageBox.Show(str(e), "Error")
 
         for i in range(self._dg.ColumnCount):
-            self._dg.Columns[i].SortMode  = \
-                                Forms.DataGridViewColumnSortMode.NotSortable
+            self._dg.Columns[i].SortMode = Forms.DataGridViewColumnSortMode.NotSortable
 
     @eventhook
     def OnCreateView(self, sender, args):
@@ -2300,8 +2342,8 @@ create table XXXXX (
     @eventhook
     def OnCreateGeneratorAndTrigger(self, sender, args, node_type='TABLE'):
         node = self.select_node(sender, args, node_type='TABLE')
-        sql = fbutil.create_generator_and_trigger_sql(node.Text,
-            self.conn_from_node(node).primary_keys(node.Text)[0], 1000000, 1)
+        sql = fbutil.create_generator_and_trigger_sql(
+            node.Text, self.conn_from_node(node).primary_keys(node.Text)[0], 1000000, 1)
         d = self.node_to_conndict(node.Parent.Parent)
         dialog = FbSqlForm.FbSqlForm(d, self.user_pref, sql=sql)
         r = dialog.ShowDialog(self)
@@ -2315,8 +2357,8 @@ create table XXXXX (
         if self.ConfirmSql(self.conn_from_node(node), sql):
             while (node.Tag['NODE_TYPE'] != 'DATABASE'):
                 node = node.Parent
-            self.WalkAndUpdateTriggerNode(node, 
-                self.active_triggers(self.conn_from_node(node)))
+            self.WalkAndUpdateTriggerNode(
+                node, self.active_triggers(self.conn_from_node(node)))
 
     @eventhook
     def OnTriggerInactivate(self, sender, args):
@@ -2325,30 +2367,30 @@ create table XXXXX (
         if self.ConfirmSql(self.conn_from_node(node), sql):
             while (node.Tag['NODE_TYPE'] != 'DATABASE'):
                 node = node.Parent
-            self.WalkAndUpdateTriggerNode(node, 
-                self.active_triggers(self.conn_from_node(node)))
+            self.WalkAndUpdateTriggerNode(
+                node, self.active_triggers(self.conn_from_node(node)))
 
     @eventhook
     def OnTriggerSource(self, sender, args):
         node = self.select_node(sender, args, node_type='TRIGGER')
         t_type = {
-                1 : 'before insert ', 
-                2 : 'after insert ', 
-                3 : 'before update ', 
-                4 : 'after update ', 
-                5 : 'before delete ', 
-                6 : 'after delete ',
-                8192 : 'on connect',
-                8193 : 'on disconnect ',
-                8194 : 'on transaction start ',
-                8195 : 'on transaction commit ',
-                8196 : 'on transaction rollback ',
+            1: 'before insert ',
+            2: 'after insert ',
+            3: 'before update ',
+            4: 'after update ',
+            5: 'before delete ',
+            6: 'after delete ',
+            8192: 'on connect',
+            8193: 'on disconnect ',
+            8194: 'on transaction start ',
+            8195: 'on transaction commit ',
+            8196: 'on transaction rollback ',
         }
         r = self.conn_from_node(node).trigger_source(node.Name)
 
         sql = 'set term !! ;\n'
         sql += 'alter trigger "' + node.Name + '"\n'
-        sql += t_type[int(r['TRIGGER_TYPE'])] 
+        sql += t_type[int(r['TRIGGER_TYPE'])]
         sql += ' position ' + str(r['SEQUENCE']) + '\n'
         sql += '\n'.join(r['SOURCE'].split('\n'))
         sql += '\n!!\nset term ; !!'
@@ -2364,8 +2406,10 @@ create table XXXXX (
     def OnDropTrigger(self, sender, args):
         node = self.select_node(sender, args, node_type='TRIGGER')
         trigger_name = node.Name
-        if self.ConfirmSql(self.conn_from_node(node),
-            'drop trigger "' + trigger_name + '"'):
+        if self.ConfirmSql(
+            self.conn_from_node(node),
+            'drop trigger "' + trigger_name + '"'
+        ):
             while (node.Tag['NODE_TYPE'] != 'DATABASE'):
                 node = node.Parent
             self.WalkAndRemoveTriggerNode(node, trigger_name)
@@ -2376,14 +2420,14 @@ create table XXXXX (
         d = self.node_to_conndict(node.Parent)
         sql = '''set term !!;
 create procedure PROC_NAME
-  (I_PARAM1 integer, I_PAREM2 VARCHAR(255)) 
-  returns 
+  (I_PARAM1 integer, I_PAREM2 VARCHAR(255))
+  returns
   (O_PARAM1 integer, O_PARAM2 VARCHAR(255))
-  as 
-  declare variable IVAL integer; 
-  declare variable DVAL date; 
+  as
+  declare variable IVAL integer;
+  declare variable DVAL date;
   begin
-    /* write your code here */ 
+    /* write your code here */
     end!!
 
     set term ; !!
@@ -2393,18 +2437,18 @@ create procedure PROC_NAME
         if r == Forms.DialogResult.OK:
             self.PopulateProcedures(node)
             self.ReaderToGrid(self.conn_from_node(node).procedures())
-        
+
     @eventhook
     def OnProcedureSource(self, sender, args):
         node = self.select_node(sender, args, node_type='PROCEDURE')
         proc = self.conn_from_node(node).procedure_source(node.Name)
         sql = 'set term !! ;\n'
         sql += 'alter procedure ' + proc['NAME'] + '('
-        sql += ','.join([in_p['NAME'] + ' ' + fbutil.fieldtype_to_string(in_p) 
-            for in_p in proc['IN_PARAMS']])
+        sql += ','.join(
+            [in_p['NAME'] + ' ' + fbutil.fieldtype_to_string(in_p) for in_p in proc['IN_PARAMS']])
         sql += ')\nreturns ('
-        sql += ','.join([out_p['NAME'] + ' ' + fbutil.fieldtype_to_string(out_p)
-            for out_p in proc['OUT_PARAMS']])
+        sql += ','.join(
+            [out_p['NAME'] + ' ' + fbutil.fieldtype_to_string(out_p) for out_p in proc['OUT_PARAMS']])
         sql += ') as\n' + '\n'.join(proc['SOURCE'].split('\n'))
         sql += '!!\nset term ; !!'
         d = self.node_to_conndict(node.Parent.Parent)
@@ -2416,8 +2460,9 @@ create procedure PROC_NAME
     @eventhook
     def OnDropProcedure(self, sender, args):
         node = self.select_node(sender, args, node_type='PROCEDURE')
-        if self.ConfirmSql(self.conn_from_node(node),
-            "drop procedure " + node.Name):
+        if self.ConfirmSql(
+            self.conn_from_node(node), "drop procedure " + node.Name
+        ):
             node = node.Parent
             self.PopulateProcedures(node)
             self.ReaderToGrid(self.conn_from_node(node).procedures())
@@ -2430,7 +2475,7 @@ create procedure PROC_NAME
             dialog = dialogform.ConnPropForm(conn_d=conn_d)
             r = dialog.ShowDialog(self)
             if r == Forms.DialogResult.OK:
-                conn_d = dialog.conn_d 
+                conn_d = dialog.conn_d
                 try:
                     d = {}
                     d.update(conn_d)
@@ -2464,19 +2509,25 @@ create procedure PROC_NAME
         else:
             self.user_pref['CONFIRM_SQL'] = '0'
         formutil.userpref_save(self.user_pref, USER_PROFILE)
-        if int(self.user_pref.get('MSSQL_SAVE_PASS_FLAG', '0')) == 0 \
-            and 'MSSQL_Password' in self.user_pref:
+        if (
+            int(self.user_pref.get('MSSQL_SAVE_PASS_FLAG', '0')) == 0
+            and 'MSSQL_Password' in self.user_pref
+        ):
             del self.user_pref['MSSQL_Password']
-        if int(self.user_pref.get('ORACLE_SAVE_PASS_FLAG', '0')) == 0 \
-            and 'ORACLE_Password' in self.user_pref:
+        if (
+            int(self.user_pref.get('ORACLE_SAVE_PASS_FLAG', '0')) == 0 and
+            'ORACLE_Password' in self.user_pref
+        ):
             del self.user_pref['ORACLE_Password']
 
         self.save_tree()
 
-if (__name__ == '__main__' or \
-    (len(sys.argv[0]) >= 9 and sys.argv[0][-9:].lower() == 'fbconsole') or 
+if (
+    __name__ == '__main__' or
+    (len(sys.argv[0]) >= 9 and sys.argv[0][-9:].lower() == 'fbconsole') or
     (len(sys.argv[0]) >= 13 and sys.argv[0][-13:].lower() == 'fbconsole.exe') or
-    sys.argv[0] == ''):
+    sys.argv[0] == ''
+):
     if (not System.Threading.Mutex(False, APP_NAME).WaitOne(0, False)):
         sys.exit(0)
 
@@ -2489,4 +2540,3 @@ if (__name__ == '__main__' or \
         sys.exit(0)
     app = MainForm()
     Forms.Application.Run(app)
-
