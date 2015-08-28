@@ -66,6 +66,7 @@ from FirebirdSql.Data.Isql import (
     FbScript,
 )
 
+
 def create_generator_and_trigger_sql(tab_name, id_name, seed, inc):
     return '''create generator "%(tab_name)s_ID";
 set generator "%(tab_name)s_ID" to %(seed)d;
@@ -78,6 +79,7 @@ as begin
 end
 !!
 set term ; !!''' % dict(tab_name=tab_name, id_name=id_name, seed=seed, inc=inc)
+
 
 def expr_sql(name, value, t):
     if IsDBNull(value):
@@ -102,12 +104,15 @@ def expr_sql(name, value, t):
     else:
         return v
 
+
 def make_dict_to_string(conn_d, ch=';', ignore_invalid_param=True):
-    valid_param = ['User', 'Password', 'DataSource', 'Port', 'Database',
+    valid_param = [
+        'User', 'Password', 'DataSource', 'Port', 'Database',
         'PacketSize', 'Role', 'Dialect', 'Charset', 'ConnectionTimeout',
         'Pooling', 'ConnectionLifeTime', 'MinPoolSize', 'MaxPoolSize',
         'FetchSize', 'ServerType', 'IsolationLevel', 'ReturnRecordsAffected',
-        'ContextConnection']
+        'ContextConnection'
+    ]
     d = {}
     if ignore_invalid_param:
         for k in conn_d:
@@ -117,22 +122,24 @@ def make_dict_to_string(conn_d, ch=';', ignore_invalid_param=True):
         d.update(conn_d)
     return "".join([str(k) + '=' + str(conn_d[k]) + ch for k in d])
 
+
 def make_string_to_dict(conn_s, ch=';'):
     d = {}
     for s in conn_s.split(ch):
         if s:
-            k,v = s.split('=', 1)
+            k, v = s.split('=', 1)
             d[k] = v
     return d
+
 
 def _print_handler(o, e):
     print e.Message
 
-def fieldtype_to_string(d,
-    resolve_typename = True, with_null_flag = False, with_default = False):
+
+def fieldtype_to_string(d, resolve_typename=True, with_null_flag=False, with_default=False):
     if resolve_typename and d['FIELD_NAME'][:4] != 'RDB$':
         s = d['FIELD_NAME'].strip()     # DOMAIN's name
-    else: # Builtin type
+    else:   # Builtin type
         type_name = d['TYPE_NAME'].strip()
         if type_name == 'SHORT':
             s = 'SMALLINT'
@@ -162,14 +169,16 @@ def fieldtype_to_string(d,
 
     return s
 
+
 def default_source_string(d):
     if not IsDBNull(d['DEFAULT_SOURCE']):
-        s =  str(d['DEFAULT_SOURCE'])
-    elif not IsDBNull(d['DOM_DEFAULT_SOURCE']): # DOMAIN
+        s = str(d['DEFAULT_SOURCE'])
+    elif not IsDBNull(d['DOM_DEFAULT_SOURCE']):     # DOMAIN
         s = str(d['DOM_DEFAULT_SOURCE']) + '(' + d['FIELD_NAME'].strip() + ')'
     else:
         s = ''
     return s
+
 
 # Backup & Restore
 def db_backup(conn_d, bkfile, meta_only=False, oh=None, bksize=2048):
@@ -184,7 +193,8 @@ def db_backup(conn_d, bkfile, meta_only=False, oh=None, bksize=2048):
         bk.ServiceOutput += ServiceOutputEventHandler(oh)
     bk.Execute()
 
-def db_restore(conn_d, bkfile, ow = True, oh=None, bksize=2048, pgsize=4096):
+
+def db_restore(conn_d, bkfile, ow=True, oh=None, bksize=2048, pgsize=4096):
     FbDatabase(conn_d).clear_pools()
     rs = FbRestore()
     rs.ConnectionString = make_dict_to_string(conn_d)
@@ -199,12 +209,14 @@ def db_restore(conn_d, bkfile, ow = True, oh=None, bksize=2048, pgsize=4096):
         rs.ServiceOutput += ServiceOutputEventHandler(oh)
     rs.Execute()
 
+
 # Log
 def server_log(conn_d, oh=_print_handler):
     lg = FbLog()
     lg.ConnectionString = make_dict_to_string(conn_d)
     lg.ServiceOutput += ServiceOutputEventHandler(oh)
     lg.Execute()
+
 
 # User
 def user_add(conn_d, uName, password, first='', last='', middle=''):
@@ -218,12 +230,14 @@ def user_add(conn_d, uName, password, first='', last='', middle=''):
     sec.ConnectionString = make_dict_to_string(conn_d)
     sec.AddUser(u)
 
+
 def user_del(conn_d, uName):
     sec = FbSecurity()
     sec.ConnectionString = make_dict_to_string(conn_d)
     u = sec.DisplayUser(uName.upper())
     if u:
         sec.DeleteUser(u)
+
 
 def user_mod(conn_d, uName, password=None, first=None, last=None, middle=None):
     sec = FbSecurity()
@@ -236,16 +250,20 @@ def user_mod(conn_d, uName, password=None, first=None, last=None, middle=None):
         u.UserPassword = password
         sec.ModifyUser(u)
 
+
 def users_list(conn_d):
     sec = FbSecurity()
     sec.ConnectionString = make_dict_to_string(conn_d)
     r = []
-    for u in  sec.DisplayUsers():
-        r.append({'NAME': u.UserName,
-                'FIRST': u.FirstName,
-                'MIDDLE': u.MiddleName,
-                'LAST': u.LastName})
+    for u in sec.DisplayUsers():
+        r.append({
+            'NAME': u.UserName,
+            'FIRST': u.FirstName,
+            'MIDDLE': u.MiddleName,
+            'LAST': u.LastName
+        })
     return r
+
 
 # Database connection wrapper
 class FbDatabase(object):
@@ -254,7 +272,7 @@ class FbDatabase(object):
         if not 'Pooling' in conn_d:
             conn_d['Pooling'] = False
         s = "".join([str(k)+'='+str(self.conn_d[k])+';' for k in self.conn_d])
-        self.conn =  FbConnection(s)
+        self.conn = FbConnection(s)
         if create_flag:
             self.conn.CreateDatabase(s, page_size, forced_writes, over_write)
 
@@ -270,7 +288,7 @@ class FbDatabase(object):
     def clear_pools(self):
         self.conn.ClearAllPools()
 
-    def execute_batch(self, sqlStmt, event_handler = None):
+    def execute_batch(self, sqlStmt, event_handler=None):
         script = FbScript(sqlStmt)
         script.Parse()
         b = FbBatchExecution(self.conn, script)
@@ -291,7 +309,8 @@ class FbDatabase(object):
         return FbCommand(sqlStmt, self.conn).ExecuteReader()
 
     def info(self):
-        d = {'Version': self.conn.ServerVersion,
+        d = {
+            'Version': self.conn.ServerVersion,
             'Packet Size': self.conn.PacketSize,
             'Connection Timeout': self.conn.ConnectionTimeout,
             'DataSource': self.conn.DataSource,
@@ -403,7 +422,7 @@ class FbDatabase(object):
             order by A.rdb$field_position, A.rdb$field_name
             ''' % (table_name.upper(), )
         return FbCommand(sqlStmt, self.conn).ExecuteReader()
-  
+
     def key_constraints_and_index(self, table_name):
         sqlStmt = '''select
             A.rdb$index_name INDEX_NAME,
@@ -426,7 +445,7 @@ class FbDatabase(object):
                         on C.rdb$constraint_name=D.rdb$constraint_name
             where A.rdb$relation_name='%s' ''' % table_name
         rows = FbCommand(sqlStmt, self.conn).ExecuteReader()
-  
+
         d = {}
         for row in rows:
             if not row['INDEX_ID'] in d:
@@ -455,8 +474,8 @@ class FbDatabase(object):
                 }
 
                 if not IsDBNull(row['FOREIGN_KEY']):
-                    d[row['INDEX_ID']]['FOREIGN_KEY'] = \
-                            self._references(row['FOREIGN_KEY'].strip())
+                    d[row['INDEX_ID']]['FOREIGN_KEY'] = self._references(
+                        row['FOREIGN_KEY'].strip())
                 else:
                     d[row['INDEX_ID']]['FOREIGN_KEY'] = ''
             d[row['INDEX_ID']]['FIELD_NAME'].append(row['FIELD_NAME'].strip())
@@ -465,7 +484,7 @@ class FbDatabase(object):
         for k in d:
             a.append(d[k])
         return a
-  
+
     def _references(self, index_name):
         sqlStmt = '''select
             A.rdb$relation_name RELATION_NAME,
@@ -495,8 +514,10 @@ class FbDatabase(object):
                 and upper(A.rdb$relation_name) = '%s' ''' % tabname.upper()
         a = []
         for row in FbCommand(sqlStmt, self.conn).ExecuteReader():
-            a.append({'CHECK_NAME': row['CHECK_NAME'].strip(),
-                        'CHECK_SOURCE': row['CHECK_SOURCE']})
+            a.append({
+                'CHECK_NAME': row['CHECK_NAME'].strip(),
+                'CHECK_SOURCE': row['CHECK_SOURCE']
+            })
         return a
 
     def constraints(self, table_name):
@@ -551,15 +572,14 @@ class FbDatabase(object):
             where upper(A.rdb$relation_name)='%s'
                 and c.rdb$constraint_type='%s'
             ''' % (tname.upper(), key_type)
-        return [r['F'].strip() \
-                    for r in FbCommand(sqlStmt, self.conn).ExecuteReader()]
+        return [r['F'].strip() for r in FbCommand(sqlStmt, self.conn).ExecuteReader()]
 
     def primary_keys(self, tname):
         return self._keys(tname, 'PRIMARY KEY')
 
     def unique_keys(self, tname):
         return self._keys(tname, 'UNIQUE')
-  
+
     def foreign_keys(self, tname):
         sqlStmt = '''select
             A.rdb$index_name INDEX_NAME,
