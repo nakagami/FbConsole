@@ -48,12 +48,10 @@ from FirebirdSql.Data.FirebirdClient import (
     FbConnection,
     FbCommand,
     FbParameter,
-    FbScript,
-    FbBatchExecution,
     FbDataAdapter,
-    FbSecurity
 )
 from FirebirdSql.Data.Services import (
+    FbSecurity,
     FbBackup,
     FbRestore,
     FbRestoreFlags,
@@ -62,6 +60,10 @@ from FirebirdSql.Data.Services import (
     ServiceOutputEventHandler,
     FbUserData,
     FbLog,
+)
+from FirebirdSql.Data.Isql import (
+    FbBatchExecution,
+    FbScript,
 )
 
 def create_generator_and_trigger_sql(tab_name, id_name, seed, inc):
