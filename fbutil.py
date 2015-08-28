@@ -1,18 +1,18 @@
 ##############################################################################
-# Copyright (c) 2007-2009, Hajime Nakagami<nakagami@da2.so-net.ne.jp>
+# Copyright (c) 2007-2009,2015 Hajime Nakagami<nakagami@gmail.com>
 # All rights reserved.
-# 
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
 # are met:
-# 
+#
 #   1. Redistributions of source code must retain the above copyright notice,
 #      this list of conditions and the following disclaimer.
-# 
+#
 #   2. Redistributions in binary form must reproduce the above copyright
 #      notice, this list of conditions and the following disclaimer in the
 #      documentation and/or other materials provided with the distribution.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 # "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 # LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
@@ -26,15 +26,17 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 ##############################################################################
-import sys, clr, re
+import sys
+import clr
+import re
 import System.IO
 from System.Convert import IsDBNull
 
 # Append for FirebirdClient DLL
 from System import Environment as Env
 folders = (
-    Env.GetFolderPath(Env.SpecialFolder.ProgramFiles) + r'\FirebirdClient 2.0',
     Env.GetFolderPath(Env.SpecialFolder.ProgramFiles) + r'\FirebirdClient',
+    Env.GetFolderPath(Env.SpecialFolder.ProgramFiles) + r'\FirebirdClient 2.0',
 )
 for f in folders:
     if System.IO.Directory.Exists(f):
@@ -604,24 +606,24 @@ class FbDatabase(object):
     
     def triggers(self, tabname=None):
         if tabname:
-            sqlStmt = '''select 
-                rdb$trigger_name NAME, 
+            sqlStmt = '''select
+                rdb$trigger_name NAME,
                 rdb$relation_name TABLE_NAME,
-                rdb$trigger_sequence SEQUENCE, 
-                rdb$trigger_type TRIGGER_TYPE, 
+                rdb$trigger_sequence SEQUENCE,
+                rdb$trigger_type TRIGGER_TYPE,
                 rdb$trigger_inactive INACT
                     from rdb$triggers
                     where (rdb$system_flag is null or rdb$system_flag = 0)
                         and rdb$relation_name='%s'
-                    order by rdb$relation_name, rdb$trigger_type, 
+                    order by rdb$relation_name, rdb$trigger_type,
                         rdb$trigger_sequence
             ''' % tabname
         else:
-            sqlStmt = '''select 
-                rdb$trigger_name NAME, 
+            sqlStmt = '''select
+                rdb$trigger_name NAME,
                 rdb$relation_name TABLE_NAME,
-                rdb$trigger_sequence SEQUENCE, 
-                rdb$trigger_type TRIGGER_TYPE, 
+                rdb$trigger_sequence SEQUENCE,
+                rdb$trigger_type TRIGGER_TYPE,
                 rdb$trigger_inactive INACT
                     from rdb$triggers
                     where (rdb$system_flag is null or rdb$system_flag = 0)
@@ -630,11 +632,11 @@ class FbDatabase(object):
         return FbCommand(sqlStmt, self.conn).ExecuteReader()
 
     def trigger_source(self, name):
-        sqlStmt = '''select 
+        sqlStmt = '''select
             rdb$relation_name TABLE_NAME,
-            rdb$trigger_sequence SEQUENCE, 
-            rdb$trigger_type TRIGGER_TYPE, 
-            rdb$trigger_source SOURCE, 
+            rdb$trigger_sequence SEQUENCE,
+            rdb$trigger_type TRIGGER_TYPE,
+            rdb$trigger_source SOURCE,
             rdb$trigger_inactive INACT
                 from rdb$triggers
                 where rdb$trigger_name='%s' ''' % (name, )
@@ -687,26 +689,26 @@ class FbDatabase(object):
                     'DEFAULT_SOURCE': p['DEFAULT_SOURCE'],
                 })
     
-            sqlStmt = ''' select 
-                A.rdb$parameter_name NAME, 
+            sqlStmt = ''' select
+                A.rdb$parameter_name NAME,
                 A.rdb$description DESCRIPTION,
                 C.rdb$type_name TYPE_NAME,
-                B.rdb$field_sub_type FIELD_SUB_TYPE, 
+                B.rdb$field_sub_type FIELD_SUB_TYPE,
                 B.rdb$field_precision FIELD_PRECISION,
-                B.rdb$field_scale FIELD_SCALE, 
+                B.rdb$field_scale FIELD_SCALE,
                 B.rdb$character_length "CHARACTER_LENGTH",
                 B.rdb$field_name FIELD_NAME,
                 B.rdb$null_flag NULL_FLAG, B.rdb$default_source DEFAULT_SOURCE
                 from rdb$procedure_parameters A, rdb$fields B, rdb$types C
-                where C.rdb$field_name='RDB$FIELD_TYPE' 
-                    and A.rdb$field_source = B.rdb$field_name 
+                where C.rdb$field_name='RDB$FIELD_TYPE'
+                    and A.rdb$field_source = B.rdb$field_name
                     and A.rdb$parameter_type = 1
-                    and B.rdb$field_type=C.rdb$type 
+                    and B.rdb$field_type=C.rdb$type
                     and  A.rdb$procedure_name='%s'
                 order by A.rdb$parameter_number''' % row['NAME']
             out_params = []
             for p in FbCommand(sqlStmt, self.conn).ExecuteReader():
-                out_params.append({ 'NAME': p['NAME'].strip(),
+                out_params.append({'NAME': p['NAME'].strip(),
                     'DESCRIPTION': p['DESCRIPTION'],
                     'TYPE_NAME': p['TYPE_NAME'],
                     'FIELD_SUB_TYPE': p['FIELD_SUB_TYPE'],
@@ -722,7 +724,7 @@ class FbDatabase(object):
                     'DESCRIPTION': row['DESCRIPTION'],
                     'SOURCE': row['SOURCE'],
                     'IN_PARAMS': in_params,
-                    'OUT_PARAMS':out_params})
+                    'OUT_PARAMS': out_params})
         return r[0] # only 1 record.
 
     def function_names(self):
@@ -735,7 +737,7 @@ class FbDatabase(object):
             '''
         return FbCommand(sqlStmt, self.conn).ExecuteReader()
 
-    def copy_table(self, oname, nname, schema_only = False):
+    def copy_table(self, oname, nname, schema_only=False):
         if len(re.findall('^[A-Za-z][A-Za-z0-9_]*$', nname)) == 0:
             return False
         nname = nname.upper()
@@ -774,18 +776,21 @@ class FbDatabase(object):
         n = 1
         # Unique constraints
         for ucol in self.unique_keys(oname):
-            while (self.execute_sca('''select count(*) 
+            while (self.execute_sca('''select count(*)
                 from rdb$relation_constraints
-                where rdb$constraint_name='INTEG_%d' ''' % (n,))):
+                where rdb$constraint_name='INTEG_%d' ''' % (n,))
+            ):
                 n = n + 1
             sqlStmt = "alter table %s add constraint INTEG_%d UNIQUE(%s)" % \
                 (nname, n, ucol)
             self.execute_noq(sqlStmt)
         # Check constraints
         for c in self.check_constraints(oname):
-            while (self.execute_sca('''select count(*) 
+            while (self.execute_sca(
+                '''select count(*)
                 from rdb$relation_constraints
-                where rdb$constraint_name='INTEG_%d' ''' % (n,))):
+                where rdb$constraint_name='INTEG_%d' ''' % (n,))
+            ):
                 n = n + 1
             sqlStmt = "alter table %s add constraint INTEG_%d %s" % \
                 (nname, n, c['CHECK_SOURCE'])
@@ -793,10 +798,9 @@ class FbDatabase(object):
 
         return True
 
-
     def set_not_null(self, table_name, column_name, not_null, check_flag=True):
         if check_flag and not_null is True:
-            sqlStmt = '''select count(*) c from %s 
+            sqlStmt = '''select count(*) c from %s
                         where %s is null''' % (table_name, column_name)
             n = FbCommand(sqlStmt, self.conn).ExecuteScalar()
             if n != 0:
@@ -806,7 +810,7 @@ class FbDatabase(object):
                 from rdb$indices A, rdb$index_segments B
                 where A.rdb$index_name=B.rdb$index_name
                     and A.rdb$relation_name = '%s'
-                    and B.rdb$field_name = '%s' 
+                    and B.rdb$field_name = '%s'
                     ''' % (table_name.upper(), column_name.upper())
             cmd = FbCommand(sqlStmt, self.conn).ExecuteReader()
             if cmd.Read():
@@ -819,7 +823,7 @@ class FbDatabase(object):
         else:
             flag = 'NULL'
         sqlStmt = ''' update rdb$relation_fields set rdb$null_flag = %s
-            where rdb$field_name = '%s' 
+            where rdb$field_name = '%s'
             and rdb$relation_name='%s' ''' % (flag, column_name, table_name)
         FbCommand(sqlStmt, self.conn).ExecuteNonQuery()
         return None
@@ -828,43 +832,43 @@ class FbDatabase(object):
         for i in range(len(fields)):
             s = "alter table %s alter %s position %d" % (name, fields[i], i+1)
             FbCommand(s, self.conn).ExecuteNonQuery()
-        
+
     def write_description(self, category, description, name, name2=None):
         description = description.replace('\\', '\\\\')
         description = description.replace("'", "''")
 
-        if category=='domain':
-            sqlStmt = '''update rdb$fields set rdb$description='%s' 
+        if category == 'domain':
+            sqlStmt = '''update rdb$fields set rdb$description='%s'
                 where rdb$field_name='%s' and rdb$validation_source is not null
                 ''' % (description, name.upper())
-        elif category=='role':
+        elif category == 'role':
             sqlStmt = '''update rdb$roles set rdb$description='%s'
-                where rdb$role_name='%s' 
+                where rdb$role_name='%s'
                 ''' % (description, name.upper())
-        elif category=='table':
+        elif category == 'table':
             sqlStmt = '''update rdb$relations set rdb$description='%s'
-                where rdb$relation_name='%s' 
+                where rdb$relation_name='%s'
                 ''' % (description, name.upper())
-        elif category=='column':
+        elif category == 'column':
             sqlStmt = ''' update rdb$relation_fields set rdb$description='%s'
                 where rdb$relation_name='%s' and rdb$field_name='%s'
-                ''' %(description, name.upper(), name2.upper())
-        elif category=='exception':
+                ''' % (description, name.upper(), name2.upper())
+        elif category == 'exception':
             sqlStmt = '''update rdb$exceptions set rdb$description='%s'
-                where rdb$exception_name='%s' 
+                where rdb$exception_name='%s'
                 ''' % (description, name.upper())
-        elif category=='procedure':
+        elif category == 'procedure':
             sqlStmt = '''update rdb$procedures set rdb$description='%s'
                 where rdb$procedure_name='%s'
                 ''' % (description, name.upper())
-        elif category=='procedure_param':
-            sqlStmt = '''update rdb$procedure_parameters 
+        elif category == 'procedure_param':
+            sqlStmt = '''update rdb$procedure_parameters
                 set rdb$description='%s'
                 where rdb$procedure_name='%s' and rdb$parameter_name='%s'
                 ''' % (description, name.upper(), name2.upper())
-        elif category=='trigger':
+        elif category == 'trigger':
             sqlStmt = '''update rdb$triggers set rdb$description='%s'
-                where rdb$trigger_name='%s' 
+                where rdb$trigger_name='%s'
                 ''' % (description, name.upper())
 
         FbCommand(sqlStmt, self.conn).ExecuteNonQuery()
@@ -880,7 +884,7 @@ if __name__ == '__main__':
         testdir = sys.argv[1]
     else:
         testdir = System.IO.Path.GetTempPath()
-        
+
     if testdir[-1] != '/':
         testdir += '/'
     print 'testdir=' + testdir
@@ -907,7 +911,7 @@ if __name__ == '__main__':
     print conn_s
     print make_string_to_dict(conn_s)
 
-    db = FbDatabase(conn_d,create_flag=True,forced_writes=True,over_write=True)
+    db = FbDatabase(conn_d, create_flag=True, forced_writes=True, over_write=True)
     db.open()
 
     db.execute_noq('CREATE ROLE role_a')
@@ -948,7 +952,7 @@ if __name__ == '__main__':
             k VARCHAR(1024),
             PRIMARY KEY (i, j),
             FOREIGN KEY (j) REFERENCES foo(b) ON UPDATE CASCADE
-        ); 
+        );
 
         CREATE TABLE baz (
             x INTEGER NOT NULL,
@@ -956,7 +960,7 @@ if __name__ == '__main__':
             z VARCHAR(255),
             PRIMARY KEY (x, y),
             FOREIGN KEY (y) REFERENCES foo(b) ON UPDATE SET NULL
-        ); 
+        );
         CREATE UNIQUE INDEX BAZ_INDEX ON BAZ(z);
 
         CREATE TABLE baz2 (
@@ -965,7 +969,7 @@ if __name__ == '__main__':
             z VARCHAR(255),
             PRIMARY KEY (x, y),
             FOREIGN KEY (y) REFERENCES foo(b) ON UPDATE SET DEFAULT
-        ); 
+        );
         CREATE INDEX BAZ2_INDEX ON BAZ2(z);
 
         CREATE VIEW foo_view AS SELECT a,b,c,d,e FROM foo;
@@ -979,7 +983,7 @@ if __name__ == '__main__':
           BEFORE INSERT
           AS BEGIN
             new.a = gen_id(gen_foo,1);
-          END 
+          END
         !!
         CREATE TRIGGER set_foo_inact FOR foo
           BEFORE INSERT
@@ -1028,9 +1032,9 @@ if __name__ == '__main__':
               WHERE b = :param_b
               INTO :sum_a, :avg_a;
             EXIT;
-          END 
+          END
         !!
-        set term ; !! 
+        set term ; !!
 
         CREATE SEQUENCE seq_foo;
 
@@ -1119,12 +1123,13 @@ if __name__ == '__main__':
         for c in db.columns(t['NAME']):
             print '\t' + c['NAME'] + ' ' + fieldtype_to_string(c),
             print c['DESCRIPTION']
+
         print '\t[key_constraints_and_index:]\n',
         for kcs in db.key_constraints_and_index(t['NAME']):
             for k in kcs:
                 print '\t'+k, kcs[k]
             print '\n'
-                
+
         print '\t[check_constraints:]\n',
         for ccs in db.check_constraints(t['NAME']):
             for k in ccs:
@@ -1149,7 +1154,7 @@ if __name__ == '__main__':
 
         print '\n  triggers:',
         for c in db.triggers(t['NAME']):
-            print c['NAME'], c['SEQUENCE'],c['TRIGGER_TYPE'], c['INACT']
+            print c['NAME'], c['SEQUENCE'], c['TRIGGER_TYPE'], c['INACT']
             print db.trigger_source(c['NAME'])['SOURCE']
 
     print "\n[views]"
@@ -1162,7 +1167,7 @@ if __name__ == '__main__':
 
     print "\n[generators]"
     for g in db.generators():
-        print g['NAME'], g['COUNT'], 
+        print g['NAME'], g['COUNT'],
         print db.get_generator_id(g['NAME'])
 
     print "\n[procedure]"
@@ -1186,7 +1191,7 @@ if __name__ == '__main__':
             if IsDBNull(u['FIELD_NAME']):
                 print u['FIELD_NAME']
             else:
-                print 
+                print
 
     print "\n[functions]"
     for f in db.function_names():
@@ -1225,12 +1230,14 @@ if __name__ == '__main__':
     for t in db.tables():
         print t['NAME']
         for k in db.foreign_keys(t['NAME'].strip()):
-            print ",".join(['PK=' + k['FIELD_NAME'].strip(), 
-                k['REF_TABLE'].strip(), k['REF_FIELD'].strip(), 
-                k['UPDATE_RULE'], k['DELETE_RULE']])
+            print ",".join(
+                ['PK=' + k['FIELD_NAME'].strip(),
+                    k['REF_TABLE'].strip(), k['REF_FIELD'].strip(),
+                    k['UPDATE_RULE'], k['DELETE_RULE']]
+            )
         for r in db.referenced_columns(t['NAME'].strip()):
             print "column %s referenced from %s %s(%s)" % (
-                r['FIELD_NAME'].strip(), r['CONST_NAME'].strip(), 
+                r['FIELD_NAME'].strip(), r['CONST_NAME'].strip(),
                 r['REFERENCED_TABLE'].strip(), r['REFERENCED_FIELD'].strip())
 
     db.close()
@@ -1240,4 +1247,3 @@ if __name__ == '__main__':
     db_backup(conn_d, testdir + r'baz.fbk', meta_only=True)
     conn_d['Database'] = testdir + r'baz.fdb'
     db_restore(conn_d, testdir + r'baz.fbk')
-
