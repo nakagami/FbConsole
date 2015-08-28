@@ -85,9 +85,9 @@ def expr_sql(name, value, t):
         return v
 
 def make_dict_to_string(conn_d, ch=';', ignore_invalid_param=True):
-    valid_param = ['User', 'Password', 'DataSource', 'Port', 'Database', 
-        'PacketSize', 'Role', 'Dialect', 'Charset', 'ConnectionTimeout', 
-        'Pooling', 'ConnectionLifeTime', 'MinPoolSize', 'MaxPoolSize', 
+    valid_param = ['User', 'Password', 'DataSource', 'Port', 'Database',
+        'PacketSize', 'Role', 'Dialect', 'Charset', 'ConnectionTimeout',
+        'Pooling', 'ConnectionLifeTime', 'MinPoolSize', 'MaxPoolSize',
         'FetchSize', 'ServerType', 'IsolationLevel', 'ReturnRecordsAffected',
         'ContextConnection']
     d = {}
@@ -110,7 +110,7 @@ def make_string_to_dict(conn_s, ch=';'):
 def _print_handler(o, e):
     print e.Message
 
-def fieldtype_to_string(d, 
+def fieldtype_to_string(d,
     resolve_typename = True, with_null_flag = False, with_default = False):
     if resolve_typename and d['FIELD_NAME'][:4] != 'RDB$':
         s = d['FIELD_NAME'].strip()     # DOMAIN's name
@@ -224,15 +224,14 @@ def users_list(conn_d):
     r = []
     for u in  sec.DisplayUsers():
         r.append({'NAME': u.UserName,
-                'FIRST': u.FirstName, 
-                'MIDDLE': u.MiddleName, 
+                'FIRST': u.FirstName,
+                'MIDDLE': u.MiddleName,
                 'LAST': u.LastName})
     return r
 
 # Database connection wrapper
 class FbDatabase(object):
-    def __init__(self, conn_d, create_flag = False,
-                page_size = 4096, forced_writes = True, over_write = False):
+    def __init__(self, conn_d, create_flag=False, page_size=4096, forced_writes=True, over_write=False):
         self.conn_d = conn_d
         if not 'Pooling' in conn_d:
             conn_d['Pooling'] = False
@@ -275,10 +274,10 @@ class FbDatabase(object):
 
     def info(self):
         d = {'Version': self.conn.ServerVersion,
-            'Packet Size' : self.conn.PacketSize,
-            'Connection Timeout' : self.conn.ConnectionTimeout,
-            'DataSource' : self.conn.DataSource,
-            'Database' : self.conn.Database,
+            'Packet Size': self.conn.PacketSize,
+            'Connection Timeout': self.conn.ConnectionTimeout,
+            'DataSource': self.conn.DataSource,
+            'Database': self.conn.Database,
         }
         sqlStmt = '''select rdb$character_set_name from rdb$database'''
         d['CHARACTER_SET'] = FbCommand(sqlStmt, self.conn).ExecuteScalar()
@@ -288,7 +287,7 @@ class FbDatabase(object):
         sqlStmt = '''select rdb$relation_name NAME,
             rdb$owner_name OWNER,
             rdb$description DESCRIPTION
-            from rdb$relations 
+            from rdb$relations
             where rdb$system_flag=%d and rdb$view_source is null
             order by rdb$relation_name''' % system_flag
         return FbCommand(sqlStmt, self.conn).ExecuteReader()
@@ -305,7 +304,7 @@ class FbDatabase(object):
     def view_source(self, name):
         sqlStmt = '''select rdb$view_source VIEW_SOURCE
             from rdb$relations
-            where rdb$relation_name='%s' and 
+            where rdb$relation_name='%s' and
                 rdb$flags=1 and rdb$view_source is not null
             ''' % (name, )
         return FbCommand(sqlStmt, self.conn).ExecuteScalar()
@@ -326,15 +325,15 @@ class FbDatabase(object):
         if dom_name:
             sqlStmt = '''select B.rdb$field_name NAME,
                 C.rdb$type_name TYPE_NAME,
-                B.rdb$field_sub_type FIELD_SUB_TYPE, 
+                B.rdb$field_sub_type FIELD_SUB_TYPE,
                 B.rdb$field_precision FIELD_PRECISION,
-                B.rdb$field_scale FIELD_SCALE, 
+                B.rdb$field_scale FIELD_SCALE,
                 B.rdb$character_length "CHARACTER_LENGTH",
                 B.rdb$field_name FIELD_NAME,
                 B.rdb$validation_source VALIDATION_SOURCE,
                 B.rdb$default_source DEFAULT_SOURCE,
                 B.rdb$description DESCRIPTION
-                from rdb$fields B, rdb$types C 
+                from rdb$fields B, rdb$types C
                 where C.rdb$field_name='RDB$FIELD_TYPE'
                     and B.rdb$field_type=C.rdb$type
                     and B.rdb$field_name ='%s' ''' % (dom_name,)
@@ -343,15 +342,15 @@ class FbDatabase(object):
         else:
             sqlStmt = '''select B.rdb$field_name NAME,
                 C.rdb$type_name TYPE_NAME,
-                B.rdb$field_sub_type FIELD_SUB_TYPE, 
+                B.rdb$field_sub_type FIELD_SUB_TYPE,
                 B.rdb$field_precision FIELD_PRECISION,
-                B.rdb$field_scale FIELD_SCALE, 
+                B.rdb$field_scale FIELD_SCALE,
                 B.rdb$character_length "CHARACTER_LENGTH",
                 B.rdb$field_name FIELD_NAME,
                 B.rdb$validation_source VALIDATION_SOURCE,
                 B.rdb$default_source DEFAULT_SOURCE,
                 B.rdb$description DESCRIPTION
-                from rdb$fields B, rdb$types C 
+                from rdb$fields B, rdb$types C
                 where C.rdb$field_name='RDB$FIELD_TYPE'
                     and B.rdb$field_type=C.rdb$type
                     and not B.rdb$field_name like 'RDB$%'
@@ -361,58 +360,58 @@ class FbDatabase(object):
     def exceptions(self):
         sqlStmt = '''select rdb$exception_name NAME,
             rdb$message MESSAGE_STRING, rdb$description DESCRIPTION
-            from rdb$exceptions 
+            from rdb$exceptions
             order by rdb$exception_number'''
         return FbCommand(sqlStmt, self.conn).ExecuteReader()
 
     def columns(self, table_name):
         sqlStmt = '''select A.rdb$field_name NAME,
-            A.rdb$null_flag NULL_FLAG, 
+            A.rdb$null_flag NULL_FLAG,
             A.rdb$default_source DEFAULT_SOURCE,
             A.rdb$description DESCRIPTION,
             C.rdb$type_name TYPE_NAME,
-            B.rdb$field_sub_type FIELD_SUB_TYPE, 
+            B.rdb$field_sub_type FIELD_SUB_TYPE,
             B.rdb$field_precision FIELD_PRECISION,
-            B.rdb$field_scale FIELD_SCALE, 
+            B.rdb$field_scale FIELD_SCALE,
             B.rdb$character_length "CHARACTER_LENGTH",
             B.rdb$field_name FIELD_NAME,
-            B.rdb$default_source DOM_DEFAULT_SOURCE, 
+            B.rdb$default_source DOM_DEFAULT_SOURCE,
             B.rdb$validation_source VALIDATION_SOURCE
             from rdb$relation_fields A, rdb$fields B, rdb$types C
             where C.rdb$field_name='RDB$FIELD_TYPE'
                 and A.rdb$field_source = B.rdb$field_name
-                and B.rdb$field_type=C.rdb$type 
+                and B.rdb$field_type=C.rdb$type
                 and  upper(A.rdb$relation_name) = '%s'
             order by A.rdb$field_position, A.rdb$field_name
             ''' % (table_name.upper(), )
         return FbCommand(sqlStmt, self.conn).ExecuteReader()
-    
+  
     def key_constraints_and_index(self, table_name):
-        sqlStmt = '''select 
-            A.rdb$index_name INDEX_NAME, 
-            A.rdb$index_id INDEX_ID, 
+        sqlStmt = '''select
+            A.rdb$index_name INDEX_NAME,
+            A.rdb$index_id INDEX_ID,
             A.rdb$unique_flag UNIQUE_FLAG,
             A.rdb$index_inactive INACT,
             A.rdb$statistics STATISTIC,
-            A.rdb$foreign_key FOREIGN_KEY, 
-            B.rdb$field_name FIELD_NAME, 
-            C.rdb$constraint_type CONST_TYPE, 
+            A.rdb$foreign_key FOREIGN_KEY,
+            B.rdb$field_name FIELD_NAME,
+            C.rdb$constraint_type CONST_TYPE,
             C.rdb$constraint_name CONST_NAME,
-            D.rdb$update_rule UPDATE_RULE, 
+            D.rdb$update_rule UPDATE_RULE,
             D.rdb$delete_rule DELETE_RULE
             from rdb$indices A
                 left join rdb$index_segments B
-                        on A.rdb$index_name=B.rdb$index_name 
-                left join rdb$relation_constraints C 
+                        on A.rdb$index_name=B.rdb$index_name
+                left join rdb$relation_constraints C
                         on A.rdb$index_name=C.rdb$index_name
-                left join rdb$ref_constraints D 
+                left join rdb$ref_constraints D
                         on C.rdb$constraint_name=D.rdb$constraint_name
             where A.rdb$relation_name='%s' ''' % table_name
         rows = FbCommand(sqlStmt, self.conn).ExecuteReader()
-    
+  
         d = {}
         for row in rows:
-            if not d.has_key(row['INDEX_ID']):
+            if not row['INDEX_ID'] in d:
                 const_type = row['CONST_TYPE']
                 if not IsDBNull(const_type):
                     const_type = const_type.strip()
@@ -426,11 +425,11 @@ class FbDatabase(object):
                 if not IsDBNull(delete_rule):
                     delete_rule = delete_rule.strip()
                 d[row['INDEX_ID']] = {
-                    'INDEX_NAME': row['INDEX_NAME'].strip(), 
+                    'INDEX_NAME': row['INDEX_NAME'].strip(),
                     'UNIQUE_FLAG': row['UNIQUE_FLAG'],
-                    'INACT' : row['INACT'],
-                    'STATISTICS' : row['STATISTIC'],
-                    'CONST_TYPE': const_type, 
+                    'INACT': row['INACT'],
+                    'STATISTICS': row['STATISTIC'],
+                    'CONST_TYPE': const_type,
                     'CONST_NAME': const_name,
                     'UPDATE_RULE': update_rule,
                     'DELETE_RULE': delete_rule,
@@ -448,32 +447,32 @@ class FbDatabase(object):
         for k in d:
             a.append(d[k])
         return a
-    
+  
     def _references(self, index_name):
-        sqlStmt = '''select 
-            A.rdb$relation_name RELATION_NAME, 
-            B.rdb$field_name FIELD_NAME 
+        sqlStmt = '''select
+            A.rdb$relation_name RELATION_NAME,
+            B.rdb$field_name FIELD_NAME
             from rdb$indices A, rdb$index_segments B
-            where A.rdb$index_name='%s' 
+            where A.rdb$index_name='%s'
                 and A.rdb$index_name=b.rdb$index_name''' % index_name
         rows = FbCommand(sqlStmt, self.conn).ExecuteReader()
         d = []
         for r in rows:
             table_name = r['RELATION_NAME'].strip()
             d.append(r['FIELD_NAME'].strip())
-    
-        return (index_name, table_name, d)  #index,table,[fields]
-    
+
+        return (index_name, table_name, d)  # index,table,[fields]
+
     def check_constraints(self, tabname):
-        sqlStmt = '''select 
-            A.rdb$constraint_name CHECK_NAME, 
-            C.rdb$trigger_source CHECK_SOURCE 
-            from rdb$relation_constraints A, rdb$check_constraints B, 
+        sqlStmt = '''select
+            A.rdb$constraint_name CHECK_NAME,
+            C.rdb$trigger_source CHECK_SOURCE
+            from rdb$relation_constraints A, rdb$check_constraints B,
                 rdb$triggers C
-            where 
-                A.rdb$constraint_type='CHECK' 
-                and A.rdb$constraint_name = B.rdb$constraint_name 
-                and B.rdb$trigger_name = C.rdb$trigger_name 
+            where
+                A.rdb$constraint_type='CHECK'
+                and A.rdb$constraint_name = B.rdb$constraint_name
+                and B.rdb$trigger_name = C.rdb$trigger_name
                 and C.rdb$trigger_type=1
                 and upper(A.rdb$relation_name) = '%s' ''' % tabname.upper()
         a = []
@@ -508,7 +507,7 @@ class FbDatabase(object):
             if r['DELETE_RULE'] != 'RESTRICT':
                 d['CONDITION'] += ' ON DELETE ' + r['DELETE_RULE']
             a.append(d)
-            
+
         check_constraints = self.check_constraints(table_name)
         for r in check_constraints:
             d = {}
@@ -521,18 +520,18 @@ class FbDatabase(object):
         return a
 
     def _keys(self, tname, key_type):
-        sqlStmt = '''select 
-            a.rdb$index_name INDEX_NAME, 
+        sqlStmt = '''select
+            a.rdb$index_name INDEX_NAME,
             b.rdb$field_name F
             from rdb$indices A
                 left join rdb$index_segments B
-                        on A.rdb$index_name=B.rdb$index_name 
-                left join rdb$relation_constraints C 
+                        on A.rdb$index_name=B.rdb$index_name
+                left join rdb$relation_constraints C
                         on A.rdb$index_name=C.rdb$index_name
-                left join rdb$ref_constraints D 
+                left join rdb$ref_constraints D
                         on C.rdb$constraint_name=D.rdb$constraint_name
-            where upper(A.rdb$relation_name)='%s' 
-                and c.rdb$constraint_type='%s' 
+            where upper(A.rdb$relation_name)='%s'
+                and c.rdb$constraint_type='%s'
             ''' % (tname.upper(), key_type)
         return [r['F'].strip() \
                     for r in FbCommand(sqlStmt, self.conn).ExecuteReader()]
@@ -542,43 +541,43 @@ class FbDatabase(object):
 
     def unique_keys(self, tname):
         return self._keys(tname, 'UNIQUE')
-    
+  
     def foreign_keys(self, tname):
         sqlStmt = '''select
             A.rdb$index_name INDEX_NAME,
             A.rdb$foreign_key FOREING_KEY,
             B.rdb$field_name FIELD_NAME,
-            C.rdb$constraint_type CONST_TYPE, 
+            C.rdb$constraint_type CONST_TYPE,
             C.rdb$constraint_name CONST_NAME,
-            D.rdb$update_rule UPDATE_RULE, 
+            D.rdb$update_rule UPDATE_RULE,
             D.rdb$delete_rule DELETE_RULE,
             A2.rdb$relation_name REF_TABLE,
             B2.rdb$field_name REF_FIELD
             from rdb$indices A
                 left join rdb$index_segments B
-                        on A.rdb$index_name=B.rdb$index_name 
-                left join rdb$relation_constraints C 
+                        on A.rdb$index_name=B.rdb$index_name
+                left join rdb$relation_constraints C
                         on A.rdb$index_name=C.rdb$index_name
-                left join rdb$ref_constraints D 
+                left join rdb$ref_constraints D
                         on C.rdb$constraint_name=D.rdb$constraint_name
                 ,
                 rdb$indices A2, rdb$index_segments B2
-            where upper(A.rdb$relation_name)='%s' 
+            where upper(A.rdb$relation_name)='%s'
                 and A2.rdb$index_name=A.rdb$foreign_key
                 and A2.rdb$index_name=B2.rdb$index_name
         ''' % tname.upper()
         return FbCommand(sqlStmt, self.conn).ExecuteReader()
 
     def referenced_columns(self, tname):
-        sqlStmt = '''select 
+        sqlStmt = '''select
             B2.rdb$field_name FIELD_NAME,
             C.rdb$constraint_name CONST_NAME,
-            A.rdb$relation_name REFERENCED_TABLE, 
+            A.rdb$relation_name REFERENCED_TABLE,
             B.rdb$field_name REFERENCED_FIELD
             from rdb$indices A
-                left join rdb$relation_constraints C 
+                left join rdb$relation_constraints C
                         on A.rdb$index_name=C.rdb$index_name,
-                rdb$index_segments B, 
+                rdb$index_segments B,
                 rdb$indices A2, rdb$index_segments B2
             where A.rdb$index_name=B.rdb$index_name
                 and A2.rdb$index_name=B2.rdb$index_name
@@ -586,11 +585,11 @@ class FbDatabase(object):
                 and A2.rdb$relation_name = '%s'
             ''' % tname.upper()
         return FbCommand(sqlStmt, self.conn).ExecuteReader()
-    
+
     def generators(self):
-        sqlStmt = '''select 
-            rdb$generator_name NAME from rdb$generators 
-            where rdb$system_flag is null or rdb$system_flag = 0 
+        sqlStmt = '''select
+            rdb$generator_name NAME from rdb$generators
+            where rdb$system_flag is null or rdb$system_flag = 0
             order by rdb$system_flag, rdb$generator_name'''
         r = []
         for row in FbCommand(sqlStmt, self.conn).ExecuteReader():
@@ -603,7 +602,7 @@ class FbDatabase(object):
     def get_generator_id(self, gen_name):
         sqlStmt = 'select gen_id(' + gen_name + ', 0) V from rdb$database'
         return FbCommand(sqlStmt, self.conn).ExecuteScalar()
-    
+
     def triggers(self, tabname=None):
         if tabname:
             sqlStmt = '''select
@@ -645,50 +644,51 @@ class FbDatabase(object):
         return cmd
 
     def procedures(self):
-        sqlStmt = '''select rdb$procedure_name NAME, 
+        sqlStmt = '''select rdb$procedure_name NAME,
             rdb$description DESCRIPTION
             from rdb$procedures order by rdb$procedure_name'''
         return FbCommand(sqlStmt, self.conn).ExecuteReader()
 
     def procedure_source(self, name):
-        sqlStmt = '''select rdb$procedure_name NAME, 
+        sqlStmt = '''select rdb$procedure_name NAME,
                 rdb$procedure_source SOURCE,
                 rdb$description DESCRIPTION
             from rdb$procedures
             where rdb$procedure_name='%s' ''' % (name,)
         r = []
         for row in FbCommand(sqlStmt, self.conn).ExecuteReader():
-            sqlStmt = '''select 
-                A.rdb$parameter_name NAME, 
+            sqlStmt = '''select
+                A.rdb$parameter_name NAME,
                 A.rdb$description DESCRIPTION,
-                C.rdb$type_name TYPE_NAME, 
-                B.rdb$field_sub_type FIELD_SUB_TYPE, 
+                C.rdb$type_name TYPE_NAME,
+                B.rdb$field_sub_type FIELD_SUB_TYPE,
                 B.rdb$field_precision FIELD_PRECISION,
-                B.rdb$field_scale FIELD_SCALE, 
+                B.rdb$field_scale FIELD_SCALE,
                 B.rdb$character_length "CHARACTER_LENGTH",
                 B.rdb$field_name FIELD_NAME,
                 B.rdb$null_flag NULL_FLAG, B.rdb$default_source DEFAULT_SOURCE
                 from rdb$procedure_parameters A, rdb$fields B, rdb$types C
-                where C.rdb$field_name='RDB$FIELD_TYPE' 
-                    and A.rdb$field_source = B.rdb$field_name 
+                where C.rdb$field_name='RDB$FIELD_TYPE'
+                    and A.rdb$field_source = B.rdb$field_name
                     and A.rdb$parameter_type = 0
-                    and B.rdb$field_type=C.rdb$type 
+                    and B.rdb$field_type=C.rdb$type
                     and  A.rdb$procedure_name='%s'
                 order by A.rdb$parameter_number''' % row['NAME']
             in_params = []
             for p in FbCommand(sqlStmt, self.conn).ExecuteReader():
-                in_params.append({ 'NAME': p['NAME'].strip(),
+                in_params.append({
+                    'NAME': p['NAME'].strip(),
                     'DESCRIPTION': p['DESCRIPTION'],
                     'TYPE_NAME': p['TYPE_NAME'],
                     'FIELD_SUB_TYPE': p['FIELD_SUB_TYPE'],
                     'FIELD_PRECISION': p['FIELD_PRECISION'],
                     'FIELD_SCALE': p['FIELD_SCALE'],
                     'CHARACTER_LENGTH': p['CHARACTER_LENGTH'],
-                    'FIELD_NAME' : p['FIELD_NAME'],
+                    'FIELD_NAME': p['FIELD_NAME'],
                     'NULL_FLAG': p['NULL_FLAG'],
                     'DEFAULT_SOURCE': p['DEFAULT_SOURCE'],
                 })
-    
+
             sqlStmt = ''' select
                 A.rdb$parameter_name NAME,
                 A.rdb$description DESCRIPTION,
@@ -708,31 +708,34 @@ class FbDatabase(object):
                 order by A.rdb$parameter_number''' % row['NAME']
             out_params = []
             for p in FbCommand(sqlStmt, self.conn).ExecuteReader():
-                out_params.append({'NAME': p['NAME'].strip(),
+                out_params.append({
+                    'NAME': p['NAME'].strip(),
                     'DESCRIPTION': p['DESCRIPTION'],
                     'TYPE_NAME': p['TYPE_NAME'],
                     'FIELD_SUB_TYPE': p['FIELD_SUB_TYPE'],
                     'FIELD_PRECISION': p['FIELD_PRECISION'],
                     'FIELD_SCALE': p['FIELD_SCALE'],
                     'CHARACTER_LENGTH': p['CHARACTER_LENGTH'],
-                    'FIELD_NAME' : p['FIELD_NAME'],
+                    'FIELD_NAME': p['FIELD_NAME'],
                     'NULL_FLAG': p['NULL_FLAG'],
                     'DEFAULT_SOURCE': p['DEFAULT_SOURCE'],
                 })
-    
-            r.append({'NAME': row['NAME'].strip(),
-                    'DESCRIPTION': row['DESCRIPTION'],
-                    'SOURCE': row['SOURCE'],
-                    'IN_PARAMS': in_params,
-                    'OUT_PARAMS': out_params})
-        return r[0] # only 1 record.
+
+            r.append({
+                'NAME': row['NAME'].strip(),
+                'DESCRIPTION': row['DESCRIPTION'],
+                'SOURCE': row['SOURCE'],
+                'IN_PARAMS': in_params,
+                'OUT_PARAMS': out_params
+            })
+        return r[0]     # only 1 record.
 
     def function_names(self):
-        sqlStmt = '''select rdb$function_name FUNCTION_NAME, 
+        sqlStmt = '''select rdb$function_name FUNCTION_NAME,
             rdb$entrypoint ENTRYPOINT,
             rdb$module_name LIBNAME,
             rdb$description DESCRIPTION
-            from rdb$functions 
+            from rdb$functions
             order by rdb$function_name
             '''
         return FbCommand(sqlStmt, self.conn).ExecuteReader()
@@ -743,9 +746,9 @@ class FbDatabase(object):
         nname = nname.upper()
         # Table columns
         sqlStmt = "create table " + nname + "(\n"
-        sqlStmt += ",\n".join([c['NAME'].strip() + ' ' + 
-            fieldtype_to_string(c, with_null_flag=True, with_default=True)
-            for c in self.columns(oname)])
+        sqlStmt += ",\n".join(
+            [c['NAME'].strip() + ' ' + fieldtype_to_string(c, with_null_flag=True, with_default=True) for c in self.columns(oname)]
+        )
         sqlStmt += ")"
         self.execute_noq(sqlStmt)
 
@@ -763,10 +766,8 @@ class FbDatabase(object):
 
         # Foreing keys
         for fk in self.foreign_keys(oname):
-            sqlStmt = \
-                'alter table "%s" add foreign key("%s") references "%s"("%s")' \
-                % (nname, fk['FIELD_NAME'].strip(), fk['REF_TABLE'].strip(), 
-                                                    fk['REF_FIELD'].strip())
+            sqlStmt = 'alter table "%s" add foreign key("%s") references "%s"("%s")' % (
+                nname, fk['FIELD_NAME'].strip(), fk['REF_TABLE'].strip(), fk['REF_FIELD'].strip())
             if fk['UPDATE_RULE'].strip() != 'RESTRICT':
                 sqlStmt += ' on update ' + fk['UPDATE_RULE']
             if fk['DELETE_RULE'].strip() != 'RESTRICT':
@@ -776,7 +777,8 @@ class FbDatabase(object):
         n = 1
         # Unique constraints
         for ucol in self.unique_keys(oname):
-            while (self.execute_sca('''select count(*)
+            while (
+                self.execute_sca('''select count(*)
                 from rdb$relation_constraints
                 where rdb$constraint_name='INTEG_%d' ''' % (n,))
             ):
