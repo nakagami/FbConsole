@@ -1,18 +1,18 @@
 ##############################################################################
-# Copyright (c) 2007-2009, Hajime Nakagami<nakagami@da2.so-net.ne.jp>
+# Copyright (c) 2007-2009,2015, Hajime Nakagami<nakagami@gmail.com>
 # All rights reserved.
-# 
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
 # are met:
-# 
+#
 #   1. Redistributions of source code must retain the above copyright notice,
 #      this list of conditions and the following disclaimer.
-# 
+#
 #   2. Redistributions in binary form must reproduce the above copyright
 #      notice, this list of conditions and the following disclaimer in the
 #      documentation and/or other materials provided with the distribution.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 # "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 # LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
@@ -26,13 +26,11 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 ##############################################################################
-import clr, sys
+import clr
 clr.AddReference("System.Windows.Forms")
 clr.AddReference("System.Drawing")
 from System.Windows import Forms
-from System.Drawing \
-    import Font, FontStyle, GraphicsUnit, Point, Size, Image, Color
-from System.IO import Path
+from System.Drawing import Font, FontStyle, GraphicsUnit, Size, Color
 from System.Text.RegularExpressions import Regex, RegexOptions
 import dialogform
 import formutil
@@ -81,8 +79,8 @@ sql_keywords = [
     'OVERFLOW', 'OVERLAPS', 'PAD', 'PAGE', 'PAGELENGTH', 'PAGES',
     'PAGE_SIZE', 'PARAMETER', 'PARTIAL', 'PASSWORD', 'PLAN', 'POSITION',
     'POST_EVENT', 'PRECISION', 'PREPARE', 'PRESERVE', 'PRIMARY', 'PRIOR',
-    'PRIVILEGES', 'PROCEDURE', 'PUBLIC', 'QUIT', 'RAW_PARTITIONS', 
-    'RDB$DB_KEY', 'READ', 'REAL', 'RECORD_VERSION', 'REFERENCES', 
+    'PRIVILEGES', 'PROCEDURE', 'PUBLIC', 'QUIT', 'RAW_PARTITIONS',
+    'RDB$DB_KEY', 'READ', 'REAL', 'RECORD_VERSION', 'REFERENCES',
     'RELATIVE', 'RELEASE', 'RESERV', 'RESERVING', 'RESTRICT', 'RETAIN',
     'RETURN', 'RETURNING_VALUES', 'RETURNS', 'REVOKE', 'RIGHT', 'ROLE',
     'ROLLBACK', 'ROWS', 'RUNTIME', 'SCHEMA', 'SCROLL', 'SECOND',
@@ -108,21 +106,21 @@ class FbSqlForm(Forms.Form):
         self.executed = False
         self.user_pref = user_pref
         self.regex = Regex(
-            r'''(\-\-.*?\n|\".*?\"|\'.*?\'|/\*(.|\n)*?\*/|\w+|\s+|.+?)''', 
+            r'''(\-\-.*?\n|\".*?\"|\'.*?\'|/\*(.|\n)*?\*/|\w+|\s+|.+?)''',
             RegexOptions.IgnoreCase)
         self.tokens = []
         # MenuStrip & MenuItem
         menu = [
-            ['EXEC', 'E&xcute', self.OnExec], 
-            ['COPY', '&Copy', self.OnCopy], 
-            ['PASTE', '&Paste', self.OnPaste], 
+            ['EXEC', 'E&xcute', self.OnExec],
+            ['COPY', '&Copy', self.OnCopy],
+            ['PASTE', '&Paste', self.OnPaste],
             ['SELECT_ALL', 'Select &All', self.OnSelectAll],
         ]
 
         self.SuspendLayout()
         self._tx = Forms.RichTextBox()
-        self._tx.Font = Font(self._tx.Font.FontFamily, 10.5,
-                                    FontStyle.Regular, GraphicsUnit.Point, 128)
+        self._tx.Font = Font(
+            self._tx.Font.FontFamily, 10.5, FontStyle.Regular, GraphicsUnit.Point, 128)
         self._tx.Multiline = True
         self._tx.Dock = Forms.DockStyle.Fill
         self._tx.TabIndex = 2
@@ -133,14 +131,10 @@ class FbSqlForm(Forms.Form):
         self._tx.TextChanged += self.OnTextValueChanged
 
         self._dg = Forms.DataGridView()
-        self._dg.ColumnHeadersHeightSizeMode = \
-                    Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
-        self._dg.AutoSizeColumnsMode = \
-                    Forms.DataGridViewAutoSizeColumnsMode.AllCells
-        self._dg.ColumnHeadersHeightSizeMode = \
-                    Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
-        self._dg.AutoSizeColumnsMode = \
-                    Forms.DataGridViewAutoSizeColumnsMode.AllCells
+        self._dg.ColumnHeadersHeightSizeMode = Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
+        self._dg.AutoSizeColumnsMode = Forms.DataGridViewAutoSizeColumnsMode.AllCells
+        self._dg.ColumnHeadersHeightSizeMode = Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
+        self._dg.AutoSizeColumnsMode = Forms.DataGridViewAutoSizeColumnsMode.AllCells
         self._dg.AllowUserToAddRows = False
         self._dg.AllowUserToDeleteRows = False
         self._dg.EditMode = Forms.DataGridViewEditMode.EditProgrammatically
@@ -165,13 +159,12 @@ class FbSqlForm(Forms.Form):
         # Form
         self.Text = conn_d['DataSource'] + ':' + conn_d['Database']
         self.AutoScaleMode = Forms.AutoScaleMode.Font
-        self.ClientSize = Size(self.user_pref.get('ISQL_WIDTH', 600),
-                                    self.user_pref.get('ISQL_HEIGHT', 500))
+        self.ClientSize = Size(
+            self.user_pref.get('ISQL_WIDTH', 600), self.user_pref.get('ISQL_HEIGHT', 500))
         self.Controls.Add(self._tool)
         self.ResumeLayout(False)
         self.PerformLayout()
         self.Closed += self.OnClose
-
 
     def on_execute_batch(self, sender, args):
         if args.DataReader:
@@ -192,7 +185,7 @@ class FbSqlForm(Forms.Form):
         while len(ts) and len(self.tokens) and ts[-1][0] == self.tokens[-1][0]:
             del ts[-1]
             del self.tokens[-1]
-        
+
         self.tokens = all_tokens    # Set current tokens.
         for t in ts:
             s = t[0]
@@ -206,13 +199,12 @@ class FbSqlForm(Forms.Form):
                 f = FontStyle.Bold
             else:
                 f = FontStyle.Regular
-            self._tx.SelectionFont = Font(
-                        self._tx.Font.FontFamily, self._tx.Font.Size, f)
+            self._tx.SelectionFont = Font(self._tx.Font.FontFamily, self._tx.Font.Size, f)
 
     def hilighter_all(self):
         self._tx.Select(0, self._tx.Text.Length)
-        self._tx.SelectionFont = Font(self._tx.Font.FontFamily, 
-                        self._tx.Font.Size, FontStyle.Regular)
+        self._tx.SelectionFont = Font(
+            self._tx.Font.FontFamily, self._tx.Font.Size, FontStyle.Regular)
         self.hilighter()
         self._tx.Select(0, 0)
 
@@ -226,8 +218,7 @@ class FbSqlForm(Forms.Form):
 
     def OnExec(self, sender, args):
         try:
-            fbutil.FbDatabase(self.conn_d).execute_batch(
-                                    self._tx.Text, self.on_execute_batch)
+            fbutil.FbDatabase(self.conn_d).execute_batch(self._tx.Text, self.on_execute_batch)
             self.executed = True
             self.DialogResult = Forms.DialogResult.OK
         except Exception, e:
@@ -237,26 +228,26 @@ class FbSqlForm(Forms.Form):
         Forms.Clipboard.SetDataObject(self._tx.Text)
 
     def OnPaste(self, sender, args):
-        self._tx.Text = Forms.Clipboard.GetDataObject().GetData(
-                                            Forms.DataFormats.StringFormat)
+        self._tx.Text = Forms.Clipboard.GetDataObject().GetData(Forms.DataFormats.StringFormat)
+
     def OnSelectAll(self, sender, args):
         self._tx.SelectAll()
 
     def OnClose(self, sender, args):
         self.user_pref['ISQL_WIDTH'] = self.ClientSize.Width
         self.user_pref['ISQL_HEIGHT'] = self.ClientSize.Height
-    
+
 if __name__ == '__main__':
     USER_PROFILE = 'FbSqlUserProf.cfg'
     try:
         conn_d = formutil.userpref_load(USER_PROFILE)
     except:
         conn_d = {
-            'DataSource' : 'localhost',
-            'Charset' : 'UNICODE_FSS', 
+            'DataSource': 'localhost',
+            'Charset': 'UNICODE_FSS',
         }
 
-    dialog = dialogform.ConnPropForm(conn_d=conn_d, require_server = True)
+    dialog = dialogform.ConnPropForm(conn_d=conn_d, require_server=True)
     r = dialog.ShowDialog()
     if r == Forms.DialogResult.OK:
         app = FbSqlForm(dialog.conn_d)
@@ -265,4 +256,3 @@ if __name__ == '__main__':
         if not int(dialog.conn_d['SAVE_PASS_FLAG']):
             dialog.conn_d['Password'] = ''
         formutil.userpref_save(dialog.conn_d, USER_PROFILE)
-
