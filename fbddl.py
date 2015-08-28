@@ -1,18 +1,18 @@
 ##############################################################################
-# Copyright (c) 2007, Hajime Nakagami<nakagami@da2.so-net.ne.jp>
+# Copyright (c) 2007,2015, Hajime Nakagami<nakagami@gmail.com>
 # All rights reserved.
-# 
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
 # are met:
-# 
+#
 #   1. Redistributions of source code must retain the above copyright notice,
 #      this list of conditions and the following disclaimer.
-# 
+#
 #   2. Redistributions in binary form must reproduce the above copyright
 #      notice, this list of conditions and the following disclaimer in the
 #      documentation and/or other materials provided with the distribution.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 # "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 # LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
@@ -26,13 +26,14 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 ##############################################################################
-import sys, clr
+import sys
+import clr
 clr.AddReference("System.Data")
 import System.IO
 from System.Convert import IsDBNull
-from System.Data import *
 
 import fbutil
+
 
 def fb_builtintype_to_string(d):
     type_name = d['TYPE_NAME'].strip()
@@ -59,10 +60,11 @@ def fb_builtintype_to_string(d):
 
     return s
 
+
 def fb_fieldtype_to_string(d):
     if d['FIELD_NAME'][:4] != 'RDB$':
         s = d['FIELD_NAME'].strip()     # DOMAIN's name
-    else: # Builtin type
+    else:   # Builtin type
         s = fb_builtintype_to_string(d)
 
     if not IsDBNull(d['DEFAULT_SOURCE']):
@@ -72,6 +74,7 @@ def fb_fieldtype_to_string(d):
         s += ' NOT NULL'
 
     return s
+
 
 def get_ddl(conn_d, debug=False):
     sql_stmt = ''
@@ -101,7 +104,7 @@ def get_ddl(conn_d, debug=False):
             s += fb_fieldtype_to_string(c)
             if c['NAME'].strip() in uks:
                 s += ' UNIQUE'
-            col_str.append(s) 
+            col_str.append(s)
         sql_stmt += ",\n".join(col_str)
         if len(pks):
             sql_stmt += ',\n    PRIMARY KEY ("' + '","'.join(pks) + '")'
@@ -111,45 +114,43 @@ def get_ddl(conn_d, debug=False):
     # Views
     for v in fb_db.views():
         sql_stmt += 'create view "%s" as %s;' % (
-                        v['NAME'].strip(), fb_db.view_source(v['NAME'].strip()))
+            v['NAME'].strip(), fb_db.view_source(v['NAME'].strip()))
     sql_stmt += '\n'
 
     # Generators
     for g in fb_db.generators():
         sql_stmt += 'create generator "%s";\nset generator "%s" to %d;\n' % (
-                            g['NAME'], g['NAME'], g['COUNT'])
+            g['NAME'], g['NAME'], g['COUNT'])
     sql_stmt += '\n'
 
     if fb_db.execute_sca('select count(*) from rdb$procedures') \
-            or fb_db.execute_sca('''select count(*) from rdb$triggers 
+            or fb_db.execute_sca('''select count(*) from rdb$triggers
                     where (rdb$system_flag is null or rdb$system_flag = 0)'''):
         sql_stmt += 'set term !! ;\n'
         # Procedures
         for p in fb_db.procedures():
             proc = fb_db.procedure_source(p['Name'].strip())
             sql_stmt += 'create procedure ' + proc['NAME'] + '('
-            sql_stmt += ','.join([in_p['NAME'] + ' ' + fb_fieldtype_to_string(in_p) 
-                for in_p in proc['IN_PARAMS']])
+            sql_stmt += ','.join([in_p['NAME'] + ' ' + fb_fieldtype_to_string(in_p) for in_p in proc['IN_PARAMS']])
             sql_stmt += ')\nreturns ('
-            sql_stmt += ','.join([out_p['NAME'] + ' ' + fb_fieldtype_to_string(out_p)
-                for out_p in proc['OUT_PARAMS']])
+            sql_stmt += ','.join([out_p['NAME'] + ' ' + fb_fieldtype_to_string(out_p) for out_p in proc['OUT_PARAMS']])
             sql_stmt += ') as\n' + '\n'.join(proc['SOURCE'].split('\n'))
             sql_stmt += '\n'
         sql_stmt += '\n'
-    
+
         # Triggers
         t_type = {
-                1 : 'before insert ', 
-                2 : 'after insert ', 
-                3 : 'before update ', 
-                4 : 'after update ', 
-                5 : 'before delete ', 
-                6 : 'after delete ',
-                8192 : 'on connect',
-                8193 : 'on disconnect ',
-                8194 : 'on transaction start ',
-                8195 : 'on transaction commit ',
-                8196 : 'on transaction rollback ',
+            1: 'before insert ',
+            2: 'after insert ',
+            3: 'before update ',
+            4: 'after update ',
+            5: 'before delete ',
+            6: 'after delete ',
+            8192: 'on connect',
+            8193: 'on disconnect ',
+            8194: 'on transaction start ',
+            8195: 'on transaction commit ',
+            8196: 'on transaction rollback ',
         }
         for t in fb_db.triggers():
             r = fb_db.trigger_source(t['NAME'].strip())
@@ -160,7 +161,7 @@ def get_ddl(conn_d, debug=False):
                 sql_stmt += 'active \n'
             if not IsDBNull(r['TABLE_NAME']):
                 sql_stmt += ' on "' + r['TABLE_NAME'].strip() + '"\n'
-            sql_stmt += t_type[int(r['TRIGGER_TYPE'])] 
+            sql_stmt += t_type[int(r['TRIGGER_TYPE'])]
             sql_stmt += ' position ' + str(r['SEQUENCE']) + '\n'
             sql_stmt += '\n'.join(r['SOURCE'].split('\n'))
             sql_stmt += '\n'
@@ -171,10 +172,10 @@ def get_ddl(conn_d, debug=False):
     # Foreign key
     for t in fb_db.tables():
         for fk in fb_db.foreign_keys(tab_name):
-            sql_stmt += \
-            'alter table "%s" add foreign key("%s") references "%s"("%s");\n' \
-                        % (t['NAME'].strip(), fk['FIELD_NAME'].strip(), 
-                            fk['REF_TABLE'].strip(), fk['REF_FIELD'].strip())
+            sql_stmt += 'alter table "%s" add foreign key("%s") references "%s"("%s");\n' % (
+                t['NAME'].strip(), fk['FIELD_NAME'].strip(),
+                fk['REF_TABLE'].strip(), fk['REF_FIELD'].strip()
+            )
     sql_stmt += '\n'
 
     # Check constraints
@@ -182,11 +183,12 @@ def get_ddl(conn_d, debug=False):
         tab_name = t['NAME'].strip()
         for chk in fb_db.check_constraints(tab_name):
             sql_stmt += 'alter table "%s" add constraint "%s" %s;\n' % (
-                            tab_name, chk['CHECK_NAME'], chk['CHECK_SOURCE'])
+                tab_name, chk['CHECK_NAME'], chk['CHECK_SOURCE'])
     sql_stmt += '\n'
 
     fb_db.close()
     return sql_stmt
+
 
 if __name__ == '__main__':
     if len(sys.argv) == 2:
@@ -201,12 +203,11 @@ if __name__ == '__main__':
     targets = ['foo', 'bar', 'baz']
     for db_name in targets:
         conn_d = {
-            'User' : 'SYSDBA',
-            'Password' : 'masterkey',
-            'DataSource' : 'localhost',
-            'Database' : testdir + db_name + '.fdb',
-            'Charset' : 'UNICODE_FSS', 
+            'User': 'SYSDBA',
+            'Password': 'masterkey',
+            'DataSource': 'localhost',
+            'Database': testdir + db_name + '.fdb',
+            'Charset': 'UNICODE_FSS',
         }
 
         print get_ddl(conn_d)
-    
