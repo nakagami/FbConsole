@@ -252,7 +252,7 @@ class FbDatabase(object):
         self.conn.ClearAllPools()
 
     def execute_batch(self, sqlStmt, event_handler = None):
-        script = FbScript(System.IO.StringReader(sqlStmt))
+        script = FbScript(sqlStmt)
         script.Parse()
         b = FbBatchExecution(self.conn, script)
         if event_handler:
