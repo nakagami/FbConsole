@@ -51,7 +51,7 @@ def is_Mono():
         return False
 
 APP_NAME = 'FbConsole'
-__version__ = '0.9.0'
+__version__ = '0.10.0'
 img_files = ['root', 'server', 'database', 'domain', 'object', 'function', 
     'generators', 'generator', 'procedures', 'procedure', 
     'systemtables', 'systemtable', 'tables', 'table', 
