@@ -713,9 +713,11 @@ class MainForm(Forms.Form):
         columns = conn.columns(viewname)
         a = []
         for c in columns:
-            a.append({'NAME':c['NAME'].strip(),
-                'TYPE':fbutil.fieldtype_to_string(c),
-                'DESCRIPTION':c['DESCRIPTION']})
+            a.append({
+                'NAME': c['NAME'].strip(),
+                'TYPE': fbutil.fieldtype_to_string(c),
+                'DESCRIPTION': c['DESCRIPTION']
+            })
         formutil.DictListToGrid(self._dg, a)
         for i in range(self._dg.ColumnCount):
             self._dg.Columns[i].SortMode  = Forms.DataGridViewColumnSortMode.NotSortable
@@ -1097,13 +1099,10 @@ class MainForm(Forms.Form):
         self._dg = Forms.DataGridView()
         System.ComponentModel.ISupportInitialize.BeginInit(self._dg)
         self._dg.DefaultCellStyle.NullValue = '<Null>'
-        self._dg.ColumnHeadersHeightSizeMode = \
-                Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
+        self._dg.ColumnHeadersHeightSizeMode = Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize
         self._dg.AutoGenerateColumns = True
-        self._dg.AutoSizeRowsMode = \
-                Forms.DataGridViewAutoSizeRowsMode.DisplayedCellsExceptHeaders
-        self._dg.AutoSizeColumnsMode = \
-                Forms.DataGridViewAutoSizeColumnsMode.AllCells
+        self._dg.AutoSizeRowsMode = Forms.DataGridViewAutoSizeRowsMode.DisplayedCellsExceptHeaders
+        self._dg.AutoSizeColumnsMode = Forms.DataGridViewAutoSizeColumnsMode.AllCells
         self._dg.Dock = Forms.DockStyle.Fill
         self._dg.CellContentClick += self.OnGridCellContentClick
         self._dg.RowValidated += self.OnRowValidated
