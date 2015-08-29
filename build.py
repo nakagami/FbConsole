@@ -34,16 +34,9 @@ import System.IO
 import System.Environment
 from FbConsole import APP_NAME, __version__, img_files
 
-src = ['FbConsole.py', 'FbSqlForm.py', 'SQLiteEdit.py', 'dialogform.py', 
-    'fbutil.py', 'fbddl.py', 'formutil.py', 'fbora.py', 'fbsql.py', 
-    'fbsqlite.py', 'orautil.py', 'sqlutil.py', 'sqliteutil.py']
-dll_libs = ['FirebirdSql.Data.FirebirdClient.dll', 
-        'Microsoft.SqlServer.ConnectionInfo.dll',
-        'Microsoft.SqlServer.Smo.dll',
-        'Microsoft.SqlServer.SqlEnum.dll',
-        'Microsoft.SqlServer.SmoEnum.dll',
-        'System.Data.SQLite.dll',
-        ]
+src = ['FbConsole.py', 'FbSqlForm.py', 'dialogform.py', 
+    'fbutil.py', 'fbddl.py', 'formutil.py']
+dll_libs = ['FirebirdSql.Data.FirebirdClient.dll']
 dir_name = ''.join([APP_NAME, '_', __version__.replace('.','_')])
 out_name = '/'.join([dir_name, APP_NAME])
 out_file = out_name + '.exe'
@@ -54,64 +47,42 @@ print "Target directory is '%s'..." % (dir_name, )
 System.IO.Directory.CreateDirectory(dir_name)
 
 print "Compile '%s'." % (out_file, )
-if sys.version_info[0:2] == (2, 4):             # IronPython 1.x
-    dll_ipy = ['IronPython.dll', 'IronMath.dll']
-    pass
-    class Sink(Hosting.CompilerSink):
-        def AddError(self, file, msg, code, loc, err, sev):
-            print "%s(%d:%d-%d:%d): %s %d: %s: '%s'" % (file, 
-                loc.StartLine, loc.StartColumn, loc.EndLine, loc.EncColumn, 
-                str(sev), err, msg, code)
+from System.Collections.Generic import List
+from IronPython.Runtime.Operations import PythonOps
+from System.Reflection import Emit
+from System.Reflection.Emit import OpCodes, AssemblyBuilderAccess
+from System.Reflection import AssemblyName, TypeAttributes, MethodAttributes
 
-    pc = Hosting.PythonCompiler(src, [], out_file, Sink())
-    pc.TargetKind = System.Reflection.Emit.PEFileKinds.WindowApplication
-    pc.ExecutableKind = System.Reflection.PortableExecutableKinds.ILOnly
-    pc.Machine = System.Reflection.ImageFileMachine.I386
-    pc.ReferencedAssemblies = []
-    pc.MainFile = main_module
-    pc.Compile() 
-    print "Delete '%s'." % (pdb_file, )
-    System.IO.File.Delete(pdb_file)
-else:
-    dll_ipy = ['IronPython.dll', 'IronPython.Modules.dll',
-        'Microsoft.Scripting.Core.dll', 'Microsoft.Scripting.dll',
-        'Microsoft.Scripting.ExtensionAttribute.dll']
-    from System.Collections.Generic import List
-    from IronPython.Runtime.Operations import PythonOps
-    from System.Reflection import Emit
-    from System.Reflection.Emit import OpCodes, AssemblyBuilderAccess
-    from System.Reflection import AssemblyName, TypeAttributes, MethodAttributes
+clr.CompileModules(out_name + '.dll', mainModule = main_module, *src)
+aName = AssemblyName(System.IO.FileInfo(out_name).Name)
+ab = PythonOps.DefineDynamicAssembly(aName, AssemblyBuilderAccess.RunAndSave)
+mb = ab.DefineDynamicModule(out_name,  aName.Name + '.exe')
+tb = mb.DefineType('PythonMain', TypeAttributes.Public)
+mainMethod = tb.DefineMethod('Main', MethodAttributes.Public | MethodAttributes.Static, int, ())
+gen = mainMethod.GetILGenerator()
 
-    clr.CompileModules(out_name + '.dll', mainModule = main_module, *src)
-    aName = AssemblyName(System.IO.FileInfo(out_name).Name)
-    ab = PythonOps.DefineDynamicAssembly(aName, AssemblyBuilderAccess.RunAndSave)
-    mb = ab.DefineDynamicModule(out_name,  aName.Name + '.exe')
-    tb = mb.DefineType('PythonMain', TypeAttributes.Public)
-    mainMethod = tb.DefineMethod('Main', MethodAttributes.Public | MethodAttributes.Static, int, ())
-    gen = mainMethod.GetILGenerator()
-    
-    # get the ScriptCode assembly...    
-    gen.Emit(OpCodes.Ldstr, aName.Name + ".dll")
-    gen.EmitCall(OpCodes.Call, clr.GetClrType(System.IO.Path).GetMethod("GetFullPath", (clr.GetClrType(str), )), ())
-    gen.EmitCall(OpCodes.Call, clr.GetClrType(System.Reflection.Assembly).GetMethod("LoadFile", (clr.GetClrType(str), )), ())
-    
-    # emit module name
-    gen.Emit(OpCodes.Ldstr, System.IO.Path.GetFileNameWithoutExtension(main_module))
-    
-    gen.Emit(OpCodes.Ldnull)
-    
-    # call InitializeModule
-    gen.EmitCall(OpCodes.Call, clr.GetClrType(PythonOps).GetMethod("InitializeModule"), ())    
-    gen.Emit(OpCodes.Ret)
-    
-    tb.CreateType()
-    ab.SetEntryPoint(mainMethod, 
-            System.Reflection.Emit.PEFileKinds.WindowApplication)
-    ab.Save(aName.Name + '.exe', 
-            System.Reflection.PortableExecutableKinds.ILOnly,
-            System.Reflection.ImageFileMachine.I386)
-    System.IO.File.Delete(out_file)
-    System.IO.File.Move(aName.Name + '.exe', out_file)
+# get the ScriptCode assembly...    
+gen.Emit(OpCodes.Ldstr, aName.Name + ".dll")
+gen.EmitCall(OpCodes.Call, clr.GetClrType(System.IO.Path).GetMethod("GetFullPath", (clr.GetClrType(str), )), ())
+gen.EmitCall(OpCodes.Call, clr.GetClrType(System.Reflection.Assembly).GetMethod("LoadFile", (clr.GetClrType(str), )), ())
+
+# emit module name
+gen.Emit(OpCodes.Ldstr, System.IO.Path.GetFileNameWithoutExtension(main_module))
+
+gen.Emit(OpCodes.Ldnull)
+
+# call InitializeModule
+gen.EmitCall(OpCodes.Call, clr.GetClrType(PythonOps).GetMethod("InitializeModule"), ())    
+gen.Emit(OpCodes.Ret)
+
+tb.CreateType()
+ab.SetEntryPoint(mainMethod, 
+        System.Reflection.Emit.PEFileKinds.WindowApplication)
+ab.Save(aName.Name + '.exe', 
+        System.Reflection.PortableExecutableKinds.ILOnly,
+        System.Reflection.ImageFileMachine.I386)
+System.IO.File.Delete(out_file)
+System.IO.File.Move(aName.Name + '.exe', out_file)
 
 print "Copy images to '%s/res'." % (dir_name)
 System.IO.Directory.CreateDirectory(dir_name + '/' +'res')
@@ -126,15 +97,6 @@ for dir in System.Environment.GetEnvironmentVariable('PATH').split(';'):
         dir = dir[:-1]
     search_path.append(dir)
 
-for f in dll_ipy:
-    for dir in search_path:
-        src = dir + '/' + f
-        if System.IO.File.Exists(src):
-            dest = '/'.join([dir_name, f])
-            System.IO.File.Copy(src, dest, True)
-            print "Copy '%s' from '%s' to '%s'." % (f, dir, dir_name)
-            break
-
 for f in dll_libs:
     for dir in sys.path:
         src = dir + '/' + f
@@ -143,7 +105,3 @@ for f in dll_libs:
             System.IO.File.Copy(src, dest, True)
             print "Copy '%s' from '%s' to '%s'." % (f, dir, dir_name)
             break
-
-for f in dll_ipy + dll_libs:
-    if not System.IO.File.Exists(dir_name + '/' + f):
-        print "Please copy '%s' to '%s', if you need." % (f, dir_name)

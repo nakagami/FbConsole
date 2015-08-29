@@ -42,9 +42,6 @@ import FbSqlForm
 import formutil
 import dialogform
 import fbutil
-import fbora, orautil
-import fbsql, sqlutil
-import fbsqlite, sqliteutil
 import fbddl
 
 def is_Mono():
