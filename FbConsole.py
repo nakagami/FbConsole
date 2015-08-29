@@ -1029,72 +1029,55 @@ class MainForm(Forms.Form):
         self.cmenu_db = formutil.build_context_menu(self._cmenu_db, cmenu_db)
 
         self._cmenu_domains = Forms.ContextMenuStrip()
-        self.cmenu_domains = formutil.build_context_menu(
-                                            self._cmenu_domains, cmenu_domains)
+        self.cmenu_domains = formutil.build_context_menu(self._cmenu_domains, cmenu_domains)
 
         self._cmenu_domain = Forms.ContextMenuStrip()
-        self.cmenu_domain = formutil.build_context_menu(
-                                            self._cmenu_domain, cmenu_domain)
+        self.cmenu_domain = formutil.build_context_menu(self._cmenu_domain, cmenu_domain)
 
         self._cmenu_exceptions = Forms.ContextMenuStrip()
-        self.cmenu_exceptions = formutil.build_context_menu(
-                                    self._cmenu_exceptions, cmenu_exceptions)
+        self.cmenu_exceptions = formutil.build_context_menu(self._cmenu_exceptions, cmenu_exceptions)
 
         self._cmenu_functions = Forms.ContextMenuStrip()
-        self.cmenu_functions = formutil.build_context_menu(
-                                    self._cmenu_functions, cmenu_functions)
+        self.cmenu_functions = formutil.build_context_menu(self._cmenu_functions, cmenu_functions)
 
         self._cmenu_generators = Forms.ContextMenuStrip()
-        self.cmenu_generators = formutil.build_context_menu(
-                                    self._cmenu_generators, cmenu_generators)
+        self.cmenu_generators = formutil.build_context_menu(self._cmenu_generators, cmenu_generators)
 
         self._cmenu_generator = Forms.ContextMenuStrip()
-        self.cmenu_generator = formutil.build_context_menu(
-                                    self._cmenu_generator, cmenu_generator)
+        self.cmenu_generator = formutil.build_context_menu(self._cmenu_generator, cmenu_generator)
 
         self._cmenu_procedures = Forms.ContextMenuStrip()
-        self.cmenu_procedures = formutil.build_context_menu(
-                                    self._cmenu_procedures, cmenu_procedures)
+        self.cmenu_procedures = formutil.build_context_menu(self._cmenu_procedures, cmenu_procedures)
 
         self._cmenu_procedure = Forms.ContextMenuStrip()
-        self.cmenu_procedure = formutil.build_context_menu(
-                                        self._cmenu_procedure, cmenu_procedure)
+        self.cmenu_procedure = formutil.build_context_menu(self._cmenu_procedure, cmenu_procedure)
 
         self._cmenu_roles = Forms.ContextMenuStrip()
-        self.cmenu_roles = formutil.build_context_menu(
-                                                self._cmenu_roles, cmenu_roles)
+        self.cmenu_roles = formutil.build_context_menu(self._cmenu_roles, cmenu_roles)
 
         self._cmenu_role = Forms.ContextMenuStrip()
-        self.cmenu_role = formutil.build_context_menu(
-                                                self._cmenu_role, cmenu_role)
+        self.cmenu_role = formutil.build_context_menu(self._cmenu_role, cmenu_role)
 
         self._cmenu_systemtable = Forms.ContextMenuStrip()
-        self.cmenu_systemtable = formutil.build_context_menu(
-                                self._cmenu_systemtable, cmenu_systemtable)
+        self.cmenu_systemtable = formutil.build_context_menu(self._cmenu_systemtable, cmenu_systemtable)
 
         self._cmenu_tables = Forms.ContextMenuStrip()
-        self.cmenu_tables = formutil.build_context_menu(
-                                            self._cmenu_tables, cmenu_tables)
+        self.cmenu_tables = formutil.build_context_menu(self._cmenu_tables, cmenu_tables)
 
         self._cmenu_table = Forms.ContextMenuStrip()
-        self.cmenu_table = formutil.build_context_menu(
-                                            self._cmenu_table, cmenu_table)
+        self.cmenu_table = formutil.build_context_menu(self._cmenu_table, cmenu_table)
 
         self._cmenu_columns = Forms.ContextMenuStrip()
-        self.cmenu_columns = formutil.build_context_menu(
-                                            self._cmenu_columns, cmenu_columns)
+        self.cmenu_columns = formutil.build_context_menu(self._cmenu_columns, cmenu_columns)
      
         self._cmenu_views = Forms.ContextMenuStrip()
-        self.cmenu_views = formutil.build_context_menu(
-                                            self._cmenu_views, cmenu_views)
+        self.cmenu_views = formutil.build_context_menu(self._cmenu_views, cmenu_views)
 
         self._cmenu_view = Forms.ContextMenuStrip()
-        self.cmenu_view = formutil.build_context_menu(
-                                            self._cmenu_view, cmenu_view)
+        self.cmenu_view = formutil.build_context_menu(self._cmenu_view, cmenu_view)
 
         self._cmenu_trigger = Forms.ContextMenuStrip()
-        self.cmenu_trigger = formutil.build_context_menu(
-                                            self._cmenu_trigger, cmenu_trigger)
+        self.cmenu_trigger = formutil.build_context_menu(self._cmenu_trigger, cmenu_trigger)
 
         # Tree View
         self._tv = Forms.TreeView()
