@@ -933,7 +933,7 @@ if __name__ == '__main__':
         'User': 'SYSDBA',
         'Password': 'masterkey',
         'DataSource': 'localhost',
-        'Database': testdir + r'test.fdb',
+        'Database': testdir + System.IO.Path.GetRandomFileName(),
         'Charset': 'UNICODE_FSS',
     }
 
