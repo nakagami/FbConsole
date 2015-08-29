@@ -282,9 +282,9 @@ class MainForm(Forms.Form):
                 if int(db_dict.get('SAVE_PASS_FLAG')):
                     db_dict['Password'] = db_node.Tag['Password']
                 d[server_node.Text].append(fbutil.make_dict_to_string(
-                                db_dict, '\n', ignore_invalid_param=False))
+                    db_dict, '\n', ignore_invalid_param=False))
         formutil.userpref_save(d, DBTREE_FILE)
- 
+
     def load_tree(self):
         try:
             pref = formutil.userpref_load(DBTREE_FILE)
@@ -313,7 +313,7 @@ class MainForm(Forms.Form):
                     db_dict = fbutil.make_string_to_dict(db_string, '\n')
                     db_node = Forms.TreeNode(db_dict['DISPLAY_NAME'], img, img)
                     db_node.ContextMenuStrip = self._cmenu_db
-                    db_node.Tag={'NODE_TYPE': 'DATABASE', 'CONNECTION': None}
+                    db_node.Tag = {'NODE_TYPE': 'DATABASE', 'CONNECTION': None}
                     db_node.Tag.update(db_dict)
                     server_node.Nodes.Add(db_node)
                 self._tv.Nodes[0].Nodes.Add(server_node)
@@ -690,14 +690,14 @@ class MainForm(Forms.Form):
                 'TYPE': fbutil.fieldtype_to_string(c, False),
                 'CHECK': c['VALIDATION_SOURCE'],
                 'DEFAULT': c['DEFAULT_SOURCE'],
-                'DESCRIPTION' : c['DESCRIPTION']
+                'DESCRIPTION': c['DESCRIPTION']
             })
         self.DictListToGrid(dl)
 
     def GrantUsersToGrid(self, conn, relation_name):
         dl = []
         for u in conn.grant_users(relation_name):
-            d = {'NAME' : u['NAME']}
+            d = {'NAME': u['NAME']}
             if u['GRANT_OPTION'] == 2:
                 d['ADMIN_OPTION'] = 'Yes'
             else:
@@ -716,15 +716,15 @@ class MainForm(Forms.Form):
             })
         formutil.DictListToGrid(self._dg, a)
         for i in range(self._dg.ColumnCount):
-            self._dg.Columns[i].SortMode  = Forms.DataGridViewColumnSortMode.NotSortable
+            self._dg.Columns[i].SortMode = Forms.DataGridViewColumnSortMode.NotSortable
 
     def TableColumnsToGrid(self, conn, tabname, ri=0, ci=0):
         if is_Mono():
-            formutil.ClearGrid(self._dg,
-                caps = ['NAME', 'TYPE', 'NOT NULL', 'DEFAULT', 'DESCRIPTION'])
+            formutil.ClearGrid(
+                self._dg, caps=['NAME', 'TYPE', 'NOT NULL', 'DEFAULT', 'DESCRIPTION'])
         else:
-            formutil.ClearGrid(self._dg,
-                caps = ['NAME', 'TYPE', 'DEFAULT', 'DESCRIPTION'])
+            formutil.ClearGrid(
+                self._dg, caps=['NAME', 'TYPE', 'DEFAULT', 'DESCRIPTION'])
             up = Forms.DataGridViewButtonColumn()
             up.HeaderText = 'Up'
             up.Text = 'Up'
@@ -737,7 +737,6 @@ class MainForm(Forms.Form):
             down.UseColumnTextForButtonValue = True
             self._dg.Columns.Insert(DOWN_BUTTON_COLUMN_INDEX, down)
             down.AutoSizeMode = Forms.DataGridViewAutoSizeColumnMode.DisplayedCells
- 
             not_null = Forms.DataGridViewCheckBoxColumn()
             not_null.HeaderText = 'NOT NULL'
             not_null.AutoSizeMode = Forms.DataGridViewAutoSizeColumnMode.DisplayedCells
@@ -763,17 +762,21 @@ class MainForm(Forms.Form):
                     null_flag = 'Yes'
                 else:
                     null_flag = 'No'
-                row = [c['NAME'].strip(), fbutil.fieldtype_to_string(c),
+                row = [
+                    c['NAME'].strip(), fbutil.fieldtype_to_string(c),
                     null_flag,
-                    fbutil.default_source_string(c), c['DESCRIPTION']]
+                    fbutil.default_source_string(c), c['DESCRIPTION']
+                ]
             else:
                 if c['NULL_FLAG'] == 1:
                     null_flag = 1
                 else:
                     null_flag = 0
-                row = [c['NAME'].strip(), fbutil.fieldtype_to_string(c),
+                row = [
+                    c['NAME'].strip(), fbutil.fieldtype_to_string(c),
                     None, None, null_flag,
-                    fbutil.default_source_string(c), c['DESCRIPTION']]
+                    fbutil.default_source_string(c), c['DESCRIPTION']
+                ]
             self._dg.Rows.Add(*row)
             if (row[0] in pk) and (row[0] in fk):
                 for j in range(len(row)):
@@ -812,12 +815,12 @@ class MainForm(Forms.Form):
             })
         formutil.DictListToGrid(self._dg, a)
         for i in range(self._dg.ColumnCount):
-            self._dg.Columns[i].SortMode  = Forms.DataGridViewColumnSortMode.NotSortable
- 
+            self._dg.Columns[i].SortMode = Forms.DataGridViewColumnSortMode.NotSortable
+
     def SetDescriptionEditable(self):
         self._dg.EditMode = Forms.DataGridViewEditMode.EditOnKeystrokeOrF2
         for ri in range(self._dg.RowCount):
-            for ci in range(self._dg.ColumnCount-1): # Last cell is DESCRIPTION
+            for ci in range(self._dg.ColumnCount-1):    # Last cell is DESCRIPTION
                 self._dg.Rows[ri].Cells[ci].ReadOnly = True
 
     def __init__(self):
@@ -1009,7 +1012,7 @@ class MainForm(Forms.Form):
         ]
 
         self.SuspendLayout()
-        self._menu= Forms.MenuStrip()
+        self._menu = Forms.MenuStrip()
         self._menu.Dock = Forms.DockStyle.Top
         self._menu.TabIndex = 1
         self.menu = formutil.build_menu(self._menu, menu)
@@ -1019,8 +1022,7 @@ class MainForm(Forms.Form):
         self._cmenu_top = Forms.ContextMenuStrip()
         self.cmenu_top = formutil.build_context_menu(self._cmenu_top, cmenu_top)
         self._cmenu_server = Forms.ContextMenuStrip()
-        self.cmenu_server = formutil.build_context_menu(
-                                            self._cmenu_server, cmenu_server)
+        self.cmenu_server = formutil.build_context_menu(self._cmenu_server, cmenu_server)
         self._cmenu_db = Forms.ContextMenuStrip()
         self.cmenu_db = formutil.build_context_menu(self._cmenu_db, cmenu_db)
 
@@ -1065,7 +1067,7 @@ class MainForm(Forms.Form):
 
         self._cmenu_columns = Forms.ContextMenuStrip()
         self.cmenu_columns = formutil.build_context_menu(self._cmenu_columns, cmenu_columns)
-     
+
         self._cmenu_views = Forms.ContextMenuStrip()
         self.cmenu_views = formutil.build_context_menu(self._cmenu_views, cmenu_views)
 
@@ -1188,10 +1190,10 @@ class MainForm(Forms.Form):
             self.SetDescriptionEditable()
         elif self.dg_mode == 'KEY_CONSTRAINTS':
             self.DictListToGrid(self.conn_from_node(
-                        node).key_constraints_and_index(node.Parent.Name))
+                node).key_constraints_and_index(node.Parent.Name))
         elif self.dg_mode == 'CHECK_CONSTRAINTS':
             self.DictListToGrid(self.conn_from_node(
-                        node).check_constraints(node.Parent.Name))
+                node).check_constraints(node.Parent.Name))
         else:
             formutil.ClearGrid(self._dg)
         if is_Mono():   # Enable delegation
@@ -1199,8 +1201,11 @@ class MainForm(Forms.Form):
 
     @eventhook
     def OnDataGridViewDataError(self, sender, args):
-        if self.dg_mode == 'TABLE_DATA' and \
-            args.Exception and args.Exception.Message != 'UserWarning':
+        if (
+            self.dg_mode == 'TABLE_DATA' and
+            args.Exception and
+            args.Exception.Message != 'UserWarning'
+        ):
             Forms.MessageBox.Show(args.Exception.Message, 'Error')
 
     @eventhook
@@ -1245,10 +1250,10 @@ class MainForm(Forms.Form):
                 if not d:
                     return
                 dialog = dialogform.UserModForm(
-                        self._dg.Rows[ri].Cells[0].Value,
-                        self._dg.Rows[ri].Cells[1].Value,
-                        self._dg.Rows[ri].Cells[2].Value,
-                        self._dg.Rows[ri].Cells[3].Value)
+                    self._dg.Rows[ri].Cells[0].Value,
+                    self._dg.Rows[ri].Cells[1].Value,
+                    self._dg.Rows[ri].Cells[2].Value,
+                    self._dg.Rows[ri].Cells[3].Value)
                 r = dialog.ShowDialog(self)
                 if r != Forms.DialogResult.OK:
                     return
@@ -1287,14 +1292,13 @@ class MainForm(Forms.Form):
                 if cname in self.table_pks:
                     if len(cond):
                         cond += ' and '
-                    cond += fbutil.expr_sql(cname, args.Row[i],
-                        self.table_type_array[i])
+                    cond += fbutil.expr_sql(cname, args.Row[i], self.table_type_array[i])
             sql = 'update "' + node.Name + '" set ' + \
-                fbutil.expr_sql(args.Column.ColumnName, args.ProposedValue,
-                    self.table_type_dict[args.Column.ColumnName]) + \
+                fbutil.expr_sql(
+                    args.Column.ColumnName, args.ProposedValue, self.table_type_dict[args.Column.ColumnName]) + \
                 ' where ' + cond
             if not self.ConfirmSql(conn, sql):
-                raise UserWarning, "Abort change value."
+                raise UserWarning("Abort change value.")
 
     @eventhook
     def OnRowValidated(self, sender, args):
@@ -1309,15 +1313,15 @@ class MainForm(Forms.Form):
                 for ci in range(self._dg.ColumnCount):
                     if not IsDBNull(self._dg.Rows[ri].Cells[ci].Value):
                         cnames.append(self._dg.Columns[ci].Name)
-                        values.append(fbutil.expr_sql(None,
-                            self._dg.Rows[ri].Cells[ci].Value,
+                        values.append(fbutil.expr_sql(
+                            None, self._dg.Rows[ri].Cells[ci].Value,
                             self.table_type_array[ci]))
                 sql = 'insert into "' + tab_name + '" ("'
                 sql += '","'.join(cnames)
                 sql += '") values (' + ','.join(values) + ')'
 
                 if self.ConfirmSql(conn, sql):
-                    pks =  conn.primary_keys(tab_name)
+                    pks = conn.primary_keys(tab_name)
                     if set(pks) - set(cnames) != set([]):
                         read_only = True
                     else:
@@ -1337,14 +1341,14 @@ class MainForm(Forms.Form):
         name = self._dg.Rows[args.RowIndex].Cells[0].Value.strip()
         if self.dg_mode == 'TABLE' or self.dg_mode == 'VIEW':
             sqlStmt = "update rdb$relation_fields " + \
-                    "set rdb$description = '" + sqlquote(description) + "' " + \
-                    "where rdb$field_name='" + name + "' " + \
-                    "and rdb$relation_name='" + node.Name + "'"
+                "set rdb$description = '" + sqlquote(description) + "' " + \
+                "where rdb$field_name='" + name + "' " + \
+                "and rdb$relation_name='" + node.Name + "'"
         elif self.dg_mode == 'PROCEDURE':
             sqlStmt = "update rdb$procedure_parameters " + \
-                    "set rdb$description = '" + sqlquote(description) + "' " + \
-                    "where rdb$parameter_name='" + name + "' " + \
-                    "and rdb$procedure_name='" + node.Name + "'"
+                "set rdb$description = '" + sqlquote(description) + "' " + \
+                "where rdb$parameter_name='" + name + "' " + \
+                "and rdb$procedure_name='" + node.Name + "'"
         else:
             if self.dg_mode == 'TABLES' or self.dg_mode == 'VIEWS':
                 tab_name = 'rdb$relations'
