@@ -277,7 +277,7 @@ class MainForm(Forms.Form):
                                     sv_dict, ignore_invalid_param = False)]
             for db_node in server_node.Nodes:
                 db_dict = {}
-                for k in ('DISPLAY_NAME', 'SAVE_PASS_FLAG', 'Database', 
+                for k in ('DISPLAY_NAME', 'SAVE_PASS_FLAG', 'Database',
                         'User', 'Charset', 'Role', 'Port', 'BACKUP_FILENAME'):
                     if k in db_node.Tag:
                         db_dict[k] = db_node.Tag[k]
@@ -286,7 +286,7 @@ class MainForm(Forms.Form):
                 d[server_node.Text].append(fbutil.make_dict_to_string(
                                 db_dict, '\n', ignore_invalid_param = False))
         formutil.userpref_save(d, DBTREE_FILE)
-    
+ 
     def load_tree(self):
         try:
             pref = formutil.userpref_load(DBTREE_FILE)
@@ -435,7 +435,7 @@ class MainForm(Forms.Form):
         img = self.imgidx('domain')
         for dm in self.conn_from_node(node).domains():
             n = Forms.TreeNode(
-                dm['NAME'].strip()+' '+fbutil.fieldtype_to_string(dm, False), 
+                dm['NAME'].strip()+' '+fbutil.fieldtype_to_string(dm, False),
                 img, img)
             n.Name = dm['NAME'].strip()
             n.ContextMenuStrip = self._cmenu_domain
@@ -691,11 +691,13 @@ class MainForm(Forms.Form):
     def DomainsToGrid(self, conn):
         dl = []
         for c in conn.domains():
-            dl.append({'NAME': c['NAME'].strip(),
+            dl.append({
+                'NAME': c['NAME'].strip(),
                 'TYPE': fbutil.fieldtype_to_string(c, False),
                 'CHECK': c['VALIDATION_SOURCE'],
                 'DEFAULT': c['DEFAULT_SOURCE'],
-                'DESCRIPTION' : c['DESCRIPTION']})
+                'DESCRIPTION' : c['DESCRIPTION']
+            })
         self.DictListToGrid(dl)
 
     def GrantUsersToGrid(self, conn, relation_name):
@@ -713,20 +715,19 @@ class MainForm(Forms.Form):
         columns = conn.columns(viewname)
         a = []
         for c in columns:
-            a.append({'NAME':c['NAME'].strip(), 
+            a.append({'NAME':c['NAME'].strip(),
                 'TYPE':fbutil.fieldtype_to_string(c),
                 'DESCRIPTION':c['DESCRIPTION']})
         formutil.DictListToGrid(self._dg, a)
         for i in range(self._dg.ColumnCount):
-            self._dg.Columns[i].SortMode  = \
-                                Forms.DataGridViewColumnSortMode.NotSortable
+            self._dg.Columns[i].SortMode  = Forms.DataGridViewColumnSortMode.NotSortable
 
     def TableColumnsToGrid(self, conn, tabname, ri=0, ci=0):
         if is_Mono():
-            formutil.ClearGrid(self._dg, 
+            formutil.ClearGrid(self._dg,
                 caps = ['NAME', 'TYPE', 'NOT NULL', 'DEFAULT', 'DESCRIPTION'])
         else:
-            formutil.ClearGrid(self._dg, 
+            formutil.ClearGrid(self._dg,
                 caps = ['NAME', 'TYPE', 'DEFAULT', 'DESCRIPTION'])
             up = Forms.DataGridViewButtonColumn()
             up.HeaderText = 'Up'
@@ -740,11 +741,10 @@ class MainForm(Forms.Form):
             down.UseColumnTextForButtonValue = True
             self._dg.Columns.Insert(DOWN_BUTTON_COLUMN_INDEX, down)
             down.AutoSizeMode = Forms.DataGridViewAutoSizeColumnMode.DisplayedCells
-    
+ 
             not_null = Forms.DataGridViewCheckBoxColumn()
             not_null.HeaderText = 'NOT NULL'
-            not_null.AutoSizeMode = \
-                            Forms.DataGridViewAutoSizeColumnMode.DisplayedCells
+            not_null.AutoSizeMode = Forms.DataGridViewAutoSizeColumnMode.DisplayedCells
             self._dg.Columns.Insert(NOT_NULL_CHECK_COLUMN_INDEX, not_null)
 
         # Get key columns
@@ -767,7 +767,7 @@ class MainForm(Forms.Form):
                     null_flag = 'Yes'
                 else:
                     null_flag = 'No'
-                row = [c['NAME'].strip(), fbutil.fieldtype_to_string(c), 
+                row = [c['NAME'].strip(), fbutil.fieldtype_to_string(c),
                     null_flag,
                     fbutil.default_source_string(c), c['DESCRIPTION']]
             else:
@@ -775,8 +775,8 @@ class MainForm(Forms.Form):
                     null_flag = 1
                 else:
                     null_flag = 0
-                row = [c['NAME'].strip(), fbutil.fieldtype_to_string(c), 
-                    None, None, null_flag, 
+                row = [c['NAME'].strip(), fbutil.fieldtype_to_string(c),
+                    None, None, null_flag,
                     fbutil.default_source_string(c), c['DESCRIPTION']]
             self._dg.Rows.Add(*row)
             if (row[0] in pk) and (row[0] in fk):
@@ -797,25 +797,27 @@ class MainForm(Forms.Form):
             self._dg.CurrentCell = self._dg.Rows[ri].Cells[ci]
 
         for i in range(self._dg.ColumnCount):
-            self._dg.Columns[i].SortMode  = \
-                                Forms.DataGridViewColumnSortMode.NotSortable
+            self._dg.Columns[i].SortMode = Forms.DataGridViewColumnSortMode.NotSortable
 
     def ProcedureParamsToGrid(self, conn, procname):
         a = []
         p = conn.procedure_source(procname)
         for in_p in p['IN_PARAMS']:
-            a.append({'I/O': 'IN', 'NAME': in_p['NAME'],
+            a.append({
+                'I/O': 'IN', 'NAME': in_p['NAME'],
                 'TYPE':fbutil.fieldtype_to_string(in_p),
-                'DESCRIPTION':in_p['DESCRIPTION']})
+                'DESCRIPTION':in_p['DESCRIPTION']
+            })
         for out_p in p['OUT_PARAMS']:
-            a.append({'I/O': 'OUT', 'NAME': out_p['NAME'],
+            a.append({
+                'I/O': 'OUT', 'NAME': out_p['NAME'],
                 'TYPE':fbutil.fieldtype_to_string(out_p),
-                'DESCRIPTION':out_p['DESCRIPTION']})
+                'DESCRIPTION':out_p['DESCRIPTION']
+            })
         formutil.DictListToGrid(self._dg, a)
         for i in range(self._dg.ColumnCount):
-            self._dg.Columns[i].SortMode  = \
-                                Forms.DataGridViewColumnSortMode.NotSortable
-    
+            self._dg.Columns[i].SortMode  = Forms.DataGridViewColumnSortMode.NotSortable
+ 
     def SetDescriptionEditable(self):
         self._dg.EditMode = Forms.DataGridViewEditMode.EditOnKeystrokeOrF2
         for ri in range(self._dg.RowCount):
@@ -832,16 +834,16 @@ class MainForm(Forms.Form):
         # MenuStrip & MenuItem
         menu = [
             ['SERVERS', '&Servers', [
-                ['REG_SERVER', 'Add &Server', self.OnRegServer], 
+                ['REG_SERVER', 'Add &Server', self.OnRegServer],
                 ['UNREG_SERVER', '&Remove Server', self.OnRemoveServer],
-                ['EDIT_SERVER', '&Edit Server info', self.OnEditServer], 
+                ['EDIT_SERVER', '&Edit Server info', self.OnEditServer],
                 ['-', '-', None],
-                ['SERVER_LOG', 'Show Server &Log', self.OnServerLog], 
+                ['SERVER_LOG', 'Show Server &Log', self.OnServerLog],
                 ['-', '-', None],
                 ['USERS_LIST', '&Users List', self.OnUsersList],
                 ['USER_ADD', 'User &Add', self.OnUserAdd],
                 ['-', '-', None],
-                ['QUIT', '&Quit', self.OnQuit], 
+                ['QUIT', '&Quit', self.OnQuit],
             ]],
             ['DATABASES', '&Databases', [
                 ['REG_DB', 'Register exsisting &Database', self.OnRegDB],
@@ -870,22 +872,22 @@ class MainForm(Forms.Form):
         ]
 
         cmenu_top = [
-            ['REG_SERVER', 'Add &Server', self.OnRegServer], 
+            ['REG_SERVER', 'Add &Server', self.OnRegServer],
             ['-', '-', None],
-            ['QUIT', '&Quit', self.OnQuit], 
+            ['QUIT', '&Quit', self.OnQuit],
         ]
 
         cmenu_server = [
-            ['EDIT_SERVER', '&Edit Server info', self.OnEditServer], 
+            ['EDIT_SERVER', '&Edit Server info', self.OnEditServer],
             ['REG_DB', 'Register exsisting &database', self.OnRegDB],
             ['CREATE_DB', 'Create &new database', self.OnCreateDB],
             ['-', '-', None],
-            ['SERVER_LOG', 'Show Server &Log', self.OnServerLog], 
+            ['SERVER_LOG', 'Show Server &Log', self.OnServerLog],
             ['-', '-', None],
             ['USERS_LIST', '&Users List', self.OnUsersList],
             ['USER_ADD', 'User &Add', self.OnUserAdd],
             ['-', '-', None],
-            ['UNREG_SERVER', '&Remove Server', self.OnRemoveServer], 
+            ['UNREG_SERVER', '&Remove Server', self.OnRemoveServer],
         ]
 
         cmenu_db = [
@@ -970,11 +972,11 @@ class MainForm(Forms.Form):
             ['SHOW_INDEX', 'Show Inde&x', self.OnShowIndex],
             ['COPY_TABLE', 'Copy Table &to ...', self.OnCopyTable],
             ['DROP_TABLE', '&Drop Table', self.OnDropTable],
-            ['GEN_TRIGGER', 'Create &New Generator and Trigger', 
+            ['GEN_TRIGGER', 'Create &New Generator and Trigger',
                 self.OnCreateGeneratorAndTrigger],
             ['ADD_COLUMN', '&Add Column', self.OnAddColumn],
             ['ADD_PRIMARY_KEY', 'Add &Primary Key', self.OnAddPrimaryKey],
-            ['SHOW_REFERENCED_COLUMNS', 'Show &Referenced Table', 
+            ['SHOW_REFERENCED_COLUMNS', 'Show &Referenced Table',
                 self.OnShowReferencedColumns],
             ['SHOW_GRANT', 'Show Grant &Users', self.OnShowGrant],
             ['GRANT_RELATION', '&Grant', self.OnGrantRelation],
@@ -1081,7 +1083,7 @@ class MainForm(Forms.Form):
         self._cmenu_columns = Forms.ContextMenuStrip()
         self.cmenu_columns = formutil.build_context_menu(
                                             self._cmenu_columns, cmenu_columns)
-        
+     
         self._cmenu_views = Forms.ContextMenuStrip()
         self.cmenu_views = formutil.build_context_menu(
                                             self._cmenu_views, cmenu_views)
@@ -1104,7 +1106,7 @@ class MainForm(Forms.Form):
         except:
             pass
         self._tv.Dock = Forms.DockStyle.Fill
-        self._tv.NodeMouseClick += self.OnNodeMouseClick 
+        self._tv.NodeMouseClick += self.OnNodeMouseClick
         self._tv.NodeMouseClick += self.OnTreeViewSelect
         self._tv.AfterSelect += self.OnTreeViewSelect
         self._tv.NodeMouseDoubleClick += self.OnNodeMouseDoubleClick
@@ -1144,7 +1146,7 @@ class MainForm(Forms.Form):
         # Form
         self.Text = APP_NAME
         self.AutoScaleMode = Forms.AutoScaleMode.Font
-        self.ClientSize = Size(self.user_pref.get('MAIN_WIDTH', 600), 
+        self.ClientSize = Size(self.user_pref.get('MAIN_WIDTH', 600),
                                         self.user_pref.get('MAIN_HEIGHT', 400))
         self.Controls.Add(self._split)
         self.Controls.Add(self._menu)
@@ -1309,10 +1311,10 @@ class MainForm(Forms.Form):
                 if cname in self.table_pks:
                     if len(cond):
                         cond += ' and '
-                    cond += fbutil.expr_sql(cname, args.Row[i], 
+                    cond += fbutil.expr_sql(cname, args.Row[i],
                         self.table_type_array[i])
             sql = 'update "' + node.Name + '" set ' + \
-                fbutil.expr_sql(args.Column.ColumnName, args.ProposedValue, 
+                fbutil.expr_sql(args.Column.ColumnName, args.ProposedValue,
                     self.table_type_dict[args.Column.ColumnName]) + \
                 ' where ' + cond
             if not self.ConfirmSql(conn, sql):
@@ -1331,10 +1333,10 @@ class MainForm(Forms.Form):
                 for ci in range(self._dg.ColumnCount):
                     if not IsDBNull(self._dg.Rows[ri].Cells[ci].Value):
                         cnames.append(self._dg.Columns[ci].Name)
-                        values.append(fbutil.expr_sql(None, 
-                            self._dg.Rows[ri].Cells[ci].Value, 
+                        values.append(fbutil.expr_sql(None,
+                            self._dg.Rows[ri].Cells[ci].Value,
                             self.table_type_array[ci]))
-                sql = 'insert into "' + tab_name + '" ("' 
+                sql = 'insert into "' + tab_name + '" ("'
                 sql += '","'.join(cnames)
                 sql += '") values (' + ','.join(values) + ')'
 
@@ -1361,7 +1363,7 @@ class MainForm(Forms.Form):
             sqlStmt = "update rdb$relation_fields " + \
                     "set rdb$description = '" + sqlquote(description) + "' " + \
                     "where rdb$field_name='" + name + "' " + \
-                    "and rdb$relation_name='" + node.Name + "'" 
+                    "and rdb$relation_name='" + node.Name + "'"
         elif self.dg_mode == 'PROCEDURE':
             sqlStmt = "update rdb$procedure_parameters " + \
                     "set rdb$description = '" + sqlquote(description) + "' " + \
