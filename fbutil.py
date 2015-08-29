@@ -1269,23 +1269,10 @@ if __name__ == '__main__':
     print "\n[copy table]\n",
     for t in db.tables():
         print t['NAME']
-    db.copy_table('foo', 'foo_copied')
-    db.copy_table('foo_copied', 'foo_copied2')
-    db.copy_table('baz2', 'baz2_copied')
-    print "-->\n",
-    for t in db.tables():
-        print t['NAME']
-        for k in db.foreign_keys(t['NAME'].strip()):
-            print ",".join(
-                ['PK=' + k['FIELD_NAME'].strip(),
-                    k['REF_TABLE'].strip(), k['REF_FIELD'].strip(),
-                    k['UPDATE_RULE'], k['DELETE_RULE']]
-            )
-        for r in db.referenced_columns(t['NAME'].strip()):
-            print "column %s referenced from %s %s(%s)" % (
-                r['FIELD_NAME'].strip(), r['CONST_NAME'].strip(),
-                r['REFERENCED_TABLE'].strip(), r['REFERENCED_FIELD'].strip())
+        if t['NAME'].strip() == 'FOO_COPIED':
+            db.execute_noq('drop table foo_copied')
 
+    db.copy_table('foo', 'foo_copied')
     db.close()
 
     print "\n[backup metadata to baz.fbk]"
