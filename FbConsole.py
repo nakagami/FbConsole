@@ -214,8 +214,7 @@ class MainForm(Forms.Form):
         d['ORACLE_Server'] = self.user_pref.get('ORACLE_Server')
         d['ORACLE_User'] = self.user_pref.get('ORACLE_User')
         d['ORACLE_Password'] = self.user_pref.get('ORACLE_Password')
-        d['ORACLE_SAVE_PASS_FLAG'] = \
-                self.user_pref.get('ORACLE_SAVE_PASS_FLAG', '0')
+        d['ORACLE_SAVE_PASS_FLAG'] = self.user_pref.get('ORACLE_SAVE_PASS_FLAG', '0')
 
         while node.Parent:
             t = node.Tag
@@ -244,9 +243,9 @@ class MainForm(Forms.Form):
         if t['NODE_TYPE'] != 'SERVER' and t['NODE_TYPE'] != 'DATABASE':
             return None
         if t['NODE_TYPE'] == 'DATABASE':
-            d = {'DataSource' : node.Parent.Tag['SERVER']}
+            d = {'DataSource': node.Parent.Tag['SERVER']}
         else:   # SERVER
-            d = {'DataSource' : t['SERVER']}
+            d = {'DataSource': t['SERVER']}
 
         for k in ('Database', 'User', 'Password', 'Role', 'Port'):
             d[k] = t.get(k)
@@ -263,22 +262,21 @@ class MainForm(Forms.Form):
         return None
 
     def save_tree(self):
-        pref = {}
-
         # TreeView
         d = {}
         for server_node in self._tv.Nodes[0].Nodes:
             sv_dict = {'SERVER': server_node.Tag['SERVER']}
-            sv_dict['User'] = server_node.Tag.get('User','')
+            sv_dict['User'] = server_node.Tag.get('User', '')
             if int(server_node.Tag.get('SAVE_PASS_FLAG', '0')):
                 sv_dict['Password'] = server_node.Tag.get('Password', '')
 
-            d[server_node.Text] = [fbutil.make_dict_to_string(
-                                    sv_dict, ignore_invalid_param = False)]
+            d[server_node.Text] = [fbutil.make_dict_to_string(sv_dict, ignore_invalid_param = False)]
             for db_node in server_node.Nodes:
                 db_dict = {}
-                for k in ('DISPLAY_NAME', 'SAVE_PASS_FLAG', 'Database',
-                        'User', 'Charset', 'Role', 'Port', 'BACKUP_FILENAME'):
+                for k in (
+                    'DISPLAY_NAME', 'SAVE_PASS_FLAG', 'Database',
+                    'User', 'Charset', 'Role', 'Port', 'BACKUP_FILENAME'
+                ):
                     if k in db_node.Tag:
                         db_dict[k] = db_node.Tag[k]
                 if int(db_dict.get('SAVE_PASS_FLAG')):
@@ -335,7 +333,7 @@ class MainForm(Forms.Form):
                     break
                 node = node.Parent
         elif node:
-            if type(node.Tag) != type({}) or not 'NODE_TYPE' in node.Tag:
+            if not (isinstance(node.Tag, dict) and 'NODE_TYPE' in node.Tag):
                 node = None
 
         if node:
@@ -805,14 +803,14 @@ class MainForm(Forms.Form):
         for in_p in p['IN_PARAMS']:
             a.append({
                 'I/O': 'IN', 'NAME': in_p['NAME'],
-                'TYPE':fbutil.fieldtype_to_string(in_p),
-                'DESCRIPTION':in_p['DESCRIPTION']
+                'TYPE': fbutil.fieldtype_to_string(in_p),
+                'DESCRIPTION': in_p['DESCRIPTION']
             })
         for out_p in p['OUT_PARAMS']:
             a.append({
                 'I/O': 'OUT', 'NAME': out_p['NAME'],
-                'TYPE':fbutil.fieldtype_to_string(out_p),
-                'DESCRIPTION':out_p['DESCRIPTION']
+                'TYPE': fbutil.fieldtype_to_string(out_p),
+                'DESCRIPTION': out_p['DESCRIPTION']
             })
         formutil.DictListToGrid(self._dg, a)
         for i in range(self._dg.ColumnCount):
@@ -1124,13 +1122,13 @@ class MainForm(Forms.Form):
         self._split.Dock = Forms.DockStyle.Fill
         self._split.Panel1.Controls.Add(self._tv)
         self._split.Panel2.Controls.Add(self._dg)
-        self._split.SplitterDistance = 50 # Real value is 150, why 1/3 ?
+        self._split.SplitterDistance = 50   # Real value is 150, why 1/3 ?
 
         # Form
         self.Text = APP_NAME
         self.AutoScaleMode = Forms.AutoScaleMode.Font
-        self.ClientSize = Size(self.user_pref.get('MAIN_WIDTH', 600),
-                                        self.user_pref.get('MAIN_HEIGHT', 400))
+        self.ClientSize = Size(
+            self.user_pref.get('MAIN_WIDTH', 600), self.user_pref.get('MAIN_HEIGHT', 400))
         self.Controls.Add(self._split)
         self.Controls.Add(self._menu)
         self.MainMenuStrip = self._menu
@@ -1223,13 +1221,13 @@ class MainForm(Forms.Form):
                 cols = [c['NAME'].strip() for c in conn.columns(node.Text)]
                 cn = cols[ri]
                 if ci == UP_BUTTON_COLUMN_INDEX:
-                    i = ri -1
+                    i = ri - 1
                 else:   # DOWN_BUTTON_COLUMN_INDEX
                     i = ri + 1
                 if i < 0:
                     i = 0               # Force top
                 elif i == len(cols):
-                    i = len(cols) -1    # Force bottom
+                    i = len(cols) - 1    # Force bottom
                 cols.remove(cn)
                 cols.insert(i, cn)
                 conn.reorder_fields(node.Text, cols)
