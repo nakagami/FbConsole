@@ -270,7 +270,7 @@ class MainForm(Forms.Form):
             if int(server_node.Tag.get('SAVE_PASS_FLAG', '0')):
                 sv_dict['Password'] = server_node.Tag.get('Password', '')
 
-            d[server_node.Text] = [fbutil.make_dict_to_string(sv_dict, ignore_invalid_param = False)]
+            d[server_node.Text] = [fbutil.make_dict_to_string(sv_dict, ignore_invalid_param=False)]
             for db_node in server_node.Nodes:
                 db_dict = {}
                 for k in (
@@ -282,7 +282,7 @@ class MainForm(Forms.Form):
                 if int(db_dict.get('SAVE_PASS_FLAG')):
                     db_dict['Password'] = db_node.Tag['Password']
                 d[server_node.Text].append(fbutil.make_dict_to_string(
-                                db_dict, '\n', ignore_invalid_param = False))
+                                db_dict, '\n', ignore_invalid_param=False))
         formutil.userpref_save(d, DBTREE_FILE)
  
     def load_tree(self):
@@ -342,7 +342,7 @@ class MainForm(Forms.Form):
 
     def ConfirmSql(self, conn, sql):
         if self.menu['CONFIRM_SQL'].Checked:
-            dialog = dialogform.SimpleSqlForm(conn, sql, read_only = True)
+            dialog = dialogform.SimpleSqlForm(conn, sql, read_only=True)
             if dialog.ShowDialog(self) == Forms.DialogResult.OK:
                 return True
             else:
@@ -428,7 +428,6 @@ class MainForm(Forms.Form):
             node.Parent.Nodes.Remove(node)
 
     def PopulateDomains(self, node):
-        conn = self.conn_from_node(node)
         node.Nodes.Clear()
         img = self.imgidx('domain')
         for dm in self.conn_from_node(node).domains():
@@ -452,7 +451,6 @@ class MainForm(Forms.Form):
             node.Nodes.Add(n)
 
     def PopulateProcedures(self, node):
-        conn = self.conn_from_node(node)
         node.Nodes.Clear()
         img = self.imgidx('procedure')
         for pc in self.conn_from_node(node).procedures():
@@ -463,7 +461,6 @@ class MainForm(Forms.Form):
             node.Nodes.Add(n)
 
     def PopulateRoles(self, node):
-        conn = self.conn_from_node(node)
         node.Nodes.Clear()
         img = self.imgidx('object')
         for r in self.conn_from_node(node).roles():
@@ -486,7 +483,7 @@ class MainForm(Forms.Form):
         self._tv.EndUpdate()
         return n
 
-    def PopulateTables(self, node, system_flag = 0):
+    def PopulateTables(self, node, system_flag=0):
         conn = self.conn_from_node(node)
         node.Nodes.Clear()
         if system_flag:
@@ -567,7 +564,6 @@ class MainForm(Forms.Form):
             node.Nodes.Add(n)
 
     def PopulateDBItems(self, node):
-        conn = self.conn_from_node(node)
         node.Nodes.Clear()
 
         img = self.imgidx('search')
@@ -619,7 +615,7 @@ class MainForm(Forms.Form):
         n = Forms.TreeNode('System Tables', img, img)
         n.Tag = {'NODE_TYPE': 'SYSTEMTABLES'}
         node.Nodes.Add(n)
-        self.PopulateTables(n, system_flag = 1)
+        self.PopulateTables(n, system_flag=1)
 
         img = self.imgidx('tables')
         n = Forms.TreeNode('Tables', img, img)
@@ -647,7 +643,7 @@ class MainForm(Forms.Form):
         d = self.node_to_conndict(node)
         if not d:
             return
-        if d['Password'] == None:
+        if d['Password'] is None:
             dialog = dialogform.UserPasswordForm(d)
             r = dialog.ShowDialog(self)
             if r != Forms.DialogResult.OK:
