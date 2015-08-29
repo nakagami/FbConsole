@@ -34,7 +34,6 @@ clr.AddReference("System.Data")
 from System.Windows import Forms
 from System.Drawing import Size, Image, Color
 from System.Data import DataTable
-from System.IO import UserPasswordForm
 from System.Convert import IsDBNull
 from System.Type import GetType
 import System.Threading.Mutex
@@ -898,13 +897,6 @@ class MainForm(Forms.Form):
             ['RESTORE_DB', '&Restore database', self.OnBackupRestoreDB],
             ['OPEN_DB', '&Open database', self.OnConnectDB],
             ['CLOSE_DB', '&Close database', self.OnCloseDB],
-            ['-', '-', None],
-            ['IMPORT_MSSQL', 'Import from MS SQLServer(&1)', self.OnImportSQL],
-            ['EXPORT_MSSQL', 'Export to MS SQLServer(&2)', self.OnExportSQL],
-            ['IMPORT_ORACLE', 'Import from Oracle(&3)', self.OnImportOracle],
-            ['EXPORT_ORACLE', 'Export to Oracle(&4)', self.OnExportOracle],
-            ['IMPORT_SQLITE', 'Import from SQLite(&5)', self.OnImportSQLite],
-            ['EXPORT_SQLITE', 'Export to SQLite(&6)', self.OnExportSQLite],
             ['-', '-', None],
             ['UNREG_DB', '&Unregister database', self.OnRemoveDB],
         ]
