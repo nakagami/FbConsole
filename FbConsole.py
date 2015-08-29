@@ -166,11 +166,10 @@ class BackupRestoreForm(Forms.Form):
                 return
         try:
             if self.is_backup:
-                fbutil.db_backup(self.conn_d, self._filePath.Text, 
-                                        self._metaonly.Checked, self.log)
+                fbutil.db_backup(
+                    self.conn_d, self._filePath.Text, self._metaonly.Checked, self.log)
             else:
-                fbutil.db_restore(self.conn_d, self._filePath.Text, 
-                                        self._overwrite.Checked, self.log)
+                fbutil.db_restore(self.conn_d, self._filePath.Text, self._overwrite.Checked, self.log)
         except Exception, e:
             if self.is_backup:
                 Forms.MessageBox.Show(str(e), "Can't backup database")
@@ -833,47 +832,41 @@ class MainForm(Forms.Form):
         # MenuStrip & MenuItem
         menu = [
             ['SERVERS', '&Servers', [
-                    ['REG_SERVER', 'Add &Server', self.OnRegServer], 
-                    ['UNREG_SERVER', '&Remove Server', self.OnRemoveServer],
-                    ['EDIT_SERVER', '&Edit Server info', self.OnEditServer], 
-                    ['-', '-', None],
-                    ['SERVER_LOG', 'Show Server &Log', self.OnServerLog], 
-                    ['-', '-', None],
-                    ['USERS_LIST', '&Users List', self.OnUsersList],
-                    ['USER_ADD', 'User &Add', self.OnUserAdd],
-                    ['-', '-', None],
-                    ['QUIT', '&Quit', self.OnQuit], 
-                ]
-            ],
+                ['REG_SERVER', 'Add &Server', self.OnRegServer], 
+                ['UNREG_SERVER', '&Remove Server', self.OnRemoveServer],
+                ['EDIT_SERVER', '&Edit Server info', self.OnEditServer], 
+                ['-', '-', None],
+                ['SERVER_LOG', 'Show Server &Log', self.OnServerLog], 
+                ['-', '-', None],
+                ['USERS_LIST', '&Users List', self.OnUsersList],
+                ['USER_ADD', 'User &Add', self.OnUserAdd],
+                ['-', '-', None],
+                ['QUIT', '&Quit', self.OnQuit], 
+            ]],
             ['DATABASES', '&Databases', [
-                    ['REG_DB', 'Register exsisting &Database', self.OnRegDB],
-                    ['UNREG_DB', '&Unregister Database', self.OnRemoveDB],
-                    ['REFRESH_TREE', 'Re&fresh Tree', self.OnRefreshTree],
-                    ['EDIT_DB', '&Edit Connect Parameter', self.OnEditDB],
-                    ['BACKUP_DB', '&Backup Databse', self.OnBackupRestoreDB],
-                    ['RESTORE_DB', '&Restore Databse', self.OnBackupRestoreDB],
-                    ['-', '-', None],
-                    ['CREATE_DB', 'Create &New database', self.OnCreateDB],
-                    ['OPEN_DB', '&Open Database', self.OnConnectDB],
-                    ['CLOSE_DB', '&Close Database', self.OnCloseDB],
-                    ['CREATE_TABLE', 'Create &Table', self.OnCreateTable],
-                ]
-            ],
+                ['REG_DB', 'Register exsisting &Database', self.OnRegDB],
+                ['UNREG_DB', '&Unregister Database', self.OnRemoveDB],
+                ['REFRESH_TREE', 'Re&fresh Tree', self.OnRefreshTree],
+                ['EDIT_DB', '&Edit Connect Parameter', self.OnEditDB],
+                ['BACKUP_DB', '&Backup Databse', self.OnBackupRestoreDB],
+                ['RESTORE_DB', '&Restore Databse', self.OnBackupRestoreDB],
+                ['-', '-', None],
+                ['CREATE_DB', 'Create &New database', self.OnCreateDB],
+                ['OPEN_DB', '&Open Database', self.OnConnectDB],
+                ['CLOSE_DB', '&Close Database', self.OnCloseDB],
+                ['CREATE_TABLE', 'Create &Table', self.OnCreateTable],
+            ]],
             ['TOOLS', '&Tools', [
-                    ['ISQL', 'Interactive &SQL', self.OnISQL],
-                    ['EXPORT_DDL', 'Export &DDL', self.OnExportDDL],
-                    ['-', '-', None],
-                ] 
-            ],
+                ['ISQL', 'Interactive &SQL', self.OnISQL],
+                ['EXPORT_DDL', 'Export &DDL', self.OnExportDDL],
+                ['-', '-', None],
+            ]],
             ['OPTIONS', '&Options', [
-                    ['CONFIRM_SQL', '&Confirm SQL', 
-                                                self.OnConfirmSql],
-                ]
-            ],
+                ['CONFIRM_SQL', '&Confirm SQL', self.OnConfirmSql],
+            ]],
             ['HELP', '&Help', [
-                    ['ABOUT', '&About', self.OnAbout],
-                ]
-            ],
+                ['ABOUT', '&About', self.OnAbout],
+            ]],
         ]
 
         cmenu_top = [
@@ -1289,10 +1282,10 @@ class MainForm(Forms.Form):
                 try:
                     fbutil.user_mod(
                         d, dialog._user.Text,
-                        password = dialog._password.Text,
-                        first = dialog._first.Text,
-                        middle = dialog._middle.Text,
-                        last = dialog._last.Text)
+                        password=dialog._password.Text,
+                        first=dialog._first.Text,
+                        middle=dialog._middle.Text,
+                        last=dialog._last.Text)
                 except Exception, e:
                     Forms.MessageBox.Show(str(e), "Error")
                     return
